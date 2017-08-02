@@ -1,0 +1,95 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+<meta name="generator" content="HTML::TextToHTML v2.51"/>
+</head>
+<body>
+<p>#include &lt;stdio.h&gt;<br/>
+#include &lt;FL/Fl.H&gt;<br/>
+#include &lt;FL/Fl_Window.H&gt;<br/>
+#include &lt;FL/Fl_Button.H&gt;<br/>
+#include &lt;FL/Fl_Progress.H&gt;
+</p>
+<p>//<br/>
+// "$Id: progress-simple.cxx 9256 2012-02-29 05:42:12Z greg.ercolano $"
+//<br/>
+// Demonstrate using the Fl_Progress widget in an application - erco 05/02/2005
+//<br/>
+// Copyright 2005,2012 Greg Ercolano.<br/>
+// Copyright 1998-2012 by Bill Spitzak and others.
+//<br/>
+// This library is free software. Distribution and use rights are outlined in
+// the file "COPYING" which should have been included with this file.  If this
+// file is missing or damaged, see the license at:
+//<br/>
+//     <a href="http://www.fltk.org/COPYING.php">http://www.fltk.org/COPYING.php</a><br/>
+//<br/>
+// Please report all bugs and problems on the following page:
+//<br/>
+//     <a href="http://www.fltk.org/str.php">http://www.fltk.org/str.php</a><br/>
+//
+</p>
+<p>#ifdef WIN32<br/>
+<strong>// WINDOWS</strong><br/>
+#include &lt;windows.h&gt;<br/>
+#define usleep(v) Sleep(v/1000)<br/>
+#else /<em>WIN32</em>/<br/>
+<strong>// UNIX</strong><br/>
+#include &lt;unistd.h&gt;                            // usleep
+#endif /<em>WIN32</em>/
+</p>
+<p>// Button callback<br/>
+void butt_cb(Fl_Widget *butt, void *data) {
+</p>
+<p>    // Deactivate the button
+</p><pre>
+    butt-&gt;deactivate();                        // prevent button from being pressed again                   
+    Fl::check();                               // give fltk some cpu to gray out button
+    // Make the progress bar
+    Fl_Window <em>w = (Fl_Window</em>)data;           // access parent window
+    w-&gt;begin();                                // add progress bar to it..
+    Fl_Progress <em>progress = new Fl_Progress(10,50,200,30);
+    progress-&gt;minimum(0);                      // set progress range to be 0.0 ~ 1.0
+    progress-&gt;maximum(1);
+    progress-&gt;color(0x88888800);               // background color
+    progress-&gt;selection_color(0x4444ff00);     // progress bar color
+    progress-&gt;labelcolor(FL_WHITE);            // percent text color
+    w-&gt;end();                                  // end adding to window
+</pre>
+<p>    // Computation loop..<br/>
+    for ( int t=1; t&lt;=500; t++ ) {
+</p><pre>
+        progress-&gt;value(t/500.0);              // update progress bar with 0.0 ~ 1.0 value
+        char percent[10];
+        sprintf(percent, "%d%%", int((t/500.0)</em>100.0));
+        progress-&gt;label(percent);              // update progress bar's label
+        Fl::check();                           // give fltk some cpu to update the screen
+        usleep(1000);                          // 'your stuff' that's compute intensive
+</pre>
+<p>    }<br/>
+    // Cleanup
+</p><pre>
+    w-&gt;remove(progress);                       // remove progress bar from window
+    delete(progress);                          // deallocate it
+    butt-&gt;activate();                          // reactivate button
+    w-&gt;redraw();                               // tell window to redraw now that progress removed
+</pre>
+<p>}<br/>
+// Main<br/>
+int main() {
+</p><p>    Fl_Window win(220,90);<br/>
+    Fl_Button butt(10,10,100,25,"Press");
+    butt.callback(butt_cb, &amp;win);<br/>
+    win.resizable(win);<br/>
+    win.show();<br/>
+    return(Fl::run());<br/>
+}
+</p>
+<p>//<br/>
+// End of "$Id: progress-simple.cxx 9256 2012-02-29 05:42:12Z greg.ercolano $".
+//</p>
+
+</body>
+</html>

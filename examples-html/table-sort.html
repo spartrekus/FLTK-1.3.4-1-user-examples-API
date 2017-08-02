@@ -1,0 +1,324 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+<meta name="generator" content="HTML::TextToHTML v2.51"/>
+</head>
+<body>
+<p>//<br/>
+// "$Id: table-sort.cxx 11493 2016-03-31 21:50:34Z AlbrechtS $"
+//<br/>
+//      table-sort -- An example application using a sortable Fl_Table
+//                
+</p><pre>
+//      Originally the 'sortapp.cxx' example program that came with 
+//      erco's Fl_Table widget. Added to FLTK in 2010.
+//
+//      Example of a non-trivial application that uses Fl_Table 
+//      with sortable columns. This example is not trying to be simple,
+//      but to demonstrate the complexities of an actual app.
+</pre>
+<p>//<br/>
+// Copyright 2010 Greg Ercolano.<br/>
+// Copyright 1998-2010 by Bill Spitzak and others.
+//<br/>
+// This library is free software. Distribution and use rights are outlined in
+// the file "COPYING" which should have been included with this file.  If this
+// file is missing or damaged, see the license at:
+//<br/>
+//     <a href="http://www.fltk.org/COPYING.php">http://www.fltk.org/COPYING.php</a><br/>
+//<br/>
+// Please report all bugs and problems on the following page:
+//<br/>
+//     <a href="http://www.fltk.org/str.php">http://www.fltk.org/str.php</a><br/>
+// 
+</p>
+<p>#include &lt;FL/Fl.H&gt;<br/>
+#include &lt;FL/Fl_Double_Window.H&gt;<br/>
+#include &lt;FL/fl_draw.H&gt;<br/>
+#include &lt;FL/Fl_Table_Row.H&gt;
+</p>
+<p>#include &lt;stdio.h&gt;<br/>
+#include &lt;string.h&gt;<br/>
+#include &lt;ctype.h&gt;<br/>
+#include &lt;vector&gt;<br/>
+#include &lt;algorithm&gt;            // STL sort
+</p>
+<p>#define MARGIN 20
+</p>
+<p>#ifdef WIN32<br/>
+<strong>// WINDOWS</strong><br/>
+#  define DIRCMD          "dir"<br/>
+static const char <em>G_header[] = { "Date", "Time", "Size", "Filename", "", "", "", "", "", 0 };
+#  ifdef <u>MSC</u>VER<br/>
+#    define popen           <u>popen<br/>
+#  endif<br/>
+#else /</em>WIN32*/<br/>
+<strong>// UNIX</strong><br/>
+<strong>  define DIRCMD          "ls -l"<br/>
+static const char <em>G</u>header[] = { "Perms", "</strong>L", "Own", "Group", "Size", "Date", "", "", "Filename", 0 };
+#endif /</em>WIN32*/
+</p>
+<p>// Font face/sizes for header and rows<br/>
+#define HEADER_FONTFACE FL_HELVETICA_BOLD
+#define HEADER_FONTSIZE 16<br/>
+#define ROW_FONTFACE    FL_HELVETICA<br/>
+#define ROW_FONTSIZE    16
+</p>
+<p>// A single row of columns<br/>
+class Row {<br/>
+public:
+</p><p>    std::vector&lt;char*&gt; cols;<br/>
+};
+</p>
+<p>// Sort class to handle sorting column using std::sort
+class SortColumn {
+</p><p>    int _col, _reverse;<br/>
+public:
+</p><p>    SortColumn(int col, int reverse) {
+</p><pre>
+        _col = col;
+        _reverse = reverse;
+</pre>
+<p>    }<br/>
+    bool operator()(const Row &amp;a, const Row &amp;b) {
+</p><pre>
+        const char *ap = ( _col &lt; (int)a.cols.size() ) ? a.cols[_col] : "",
+                   <em>bp = ( _col &lt; (int)b.cols.size() ) ? b.cols[_col] : "";
+        if ( isdigit(</em>ap) &amp;&amp; isdigit(*bp) ) {           // cheezy detection of numeric data
+            // Numeric sort
+            int av=0; sscanf(ap, "%d", &amp;av);
+            int bv=0; sscanf(bp, "%d", &amp;bv);
+            return( _reverse ? av &lt; bv : bv &lt; av );
+        } else {
+            // Alphabetic sort
+            return( _reverse ? strcmp(ap, bp) &gt; 0 : strcmp(ap, bp) &lt; 0 );
+        }
+</pre>
+<p>    }<br/>
+};
+</p>
+<p>// Derive a custom class from Fl_Table_Row
+class MyTable : public Fl_Table_Row {<br/>
+private:
+</p><p>    std::vector&lt;Row&gt; _rowdata;                                  // data in each row
+    int <u>sort</u>reverse;<br/>
+    int <u>sort</u>lastcol;
+</p>
+<p>    static void event_callback(Fl_Widget<em>, void</em>);
+    void event_callback2();                                     // callback for table events
+</p>
+<dl>
+  <dt>protected</dt>
+<dd>    void draw_cell(TableContext context, int R=0, int C=0,      // table cell drawing
+<p>                   int X=0, int Y=0, int W=0, int H=0);
+    void sort_column(int col, int reverse=0);                   // sort table by a column
+    void draw_sort_arrow(int X,int Y,int W,int H);
+</p>
+  </dd><dt>public</dt>
+<dd>    // Ctor
+    MyTable(int x, int y, int w, int h, const char <em>l=0) : Fl_Table_Row(x,y,w,h,l) {
+<p>        <u>sort</u>reverse = 0;
+        <u>sort</u>lastcol = -1;
+        end();
+        callback(event_callback, (void</em>)this);
+    }
+    ~MyTable() { }                              // Dtor
+    void load_command(const char *cmd);         // Load the output of a command into table
+    void autowidth(int pad);                    // Automatically set column widths to data
+    void resize_window();                       // Resize parent window to size of table
+};
+</p>
+</dd></dl>
+<p>// Sort a column up or down<br/>
+void MyTable::sort_column(int col, int reverse) {
+</p><p>    std::sort(_rowdata.begin(), _rowdata.end(), SortColumn(col, reverse));
+    redraw();<br/>
+}
+</p>
+<p>// Draw sort arrow<br/>
+void MyTable::draw_sort_arrow(int X,int Y,int W,int H) {
+</p><p>    int xlft = X+(W-6)-8;<br/>
+    int xctr = X+(W-6)-4;<br/>
+    int xrit = X+(W-6)-0;<br/>
+    int ytop = Y+(H/2)-4;<br/>
+    int ybot = Y+(H/2)+4;<br/>
+    if ( <u>sort</u>reverse ) {
+</p><pre>
+        // Engraved down arrow
+        fl_color(FL_WHITE);
+        fl_line(xrit, ytop, xctr, ybot);
+        fl_color(41);                   // dark gray
+        fl_line(xlft, ytop, xrit, ytop);
+        fl_line(xlft, ytop, xctr, ybot);
+    } else {
+        // Engraved up arrow
+        fl_color(FL_WHITE);
+        fl_line(xrit, ybot, xctr, ytop);
+        fl_line(xrit, ybot, xlft, ybot);
+        fl_color(41);                   // dark gray
+        fl_line(xlft, ybot, xctr, ytop);
+</pre>
+<p>    }<br/>
+}
+</p>
+<p>// Handle drawing all cells in table<br/>
+void MyTable::draw_cell(TableContext context, int R, int C, int X, int Y, int W, int H) {
+</p><p>    const char *s = ""; <br/>
+    if ( R &lt; (int)_rowdata.size() &amp;&amp; C &lt; (int)_rowdata[R].cols.size() )
+</p><p>        s = <u>rowdata[R].cols[C]; <br/>
+    switch ( context ) {
+</p><pre>
+        case CONTEXT</u>COL_HEADER:
+            fl_push_clip(X,Y,W,H); {
+                fl_draw_box(FL_THIN_UP_BOX, X,Y,W,H, FL_BACKGROUND_COLOR);
+                if ( C &lt; 9 ) {
+                    fl_font(HEADER_FONTFACE, HEADER_FONTSIZE);
+                    fl_color(FL_BLACK);
+                    fl_draw(G_header[C], X+2,Y,W,H, FL_ALIGN_LEFT, 0, 0);         // +2=pad left 
+                    // Draw sort arrow
+                    if ( C == <u>sort</u>lastcol ) {
+                        draw_sort_arrow(X,Y,W,H);
+                    }
+                }
+            }
+            fl_pop_clip();
+            return; 
+        case CONTEXT_CELL: {
+            fl_push_clip(X,Y,W,H); {
+                // Bg color
+                Fl_Color bgcolor = row_selected(R) ? selection_color() : FL_WHITE;
+                fl_color(bgcolor); fl_rectf(X,Y,W,H); 
+                fl_font(ROW_FONTFACE, ROW_FONTSIZE);
+                fl_color(FL_BLACK); fl_draw(s, X+2,Y,W,H, FL_ALIGN_LEFT);     // +2=pad left 
+                // Border
+                fl_color(FL_LIGHT2); fl_rect(X,Y,W,H);
+            }
+            fl_pop_clip();
+            return;
+        }
+        default:
+            return;
+</pre>
+<p>    }<br/>
+}
+</p>
+<p>// Automatically set column widths to widest data in each column
+void MyTable::autowidth(int pad) {
+</p><p>    int w, h;<br/>
+    // Initialize all column widths to header width
+    fl_font(HEADER_FONTFACE, HEADER_FONTSIZE);
+    for ( int c=0; G_header[c]; c++ ) {
+</p><pre>
+        w=0; fl_measure(G_header[c], w, h, 0);                   // pixel width of header text
+        col_width(c, w+pad);
+</pre>
+<p>    }<br/>
+    fl_font(ROW_FONTFACE, ROW_FONTSIZE);
+    for ( int r=0; r&lt;(int)_rowdata.size(); r++ ) {
+</p><pre>
+        for ( int c=0; c&lt;(int)<u>rowdata[r].cols.size(); c++ ) {
+            w=0; fl</u>measure(<u>rowdata[r].cols[c], w, h, 0);       // pixel width of row text
+            if ( (w + pad) &gt; col</u>width(c)) col_width(c, w + pad);
+        }
+</pre>
+<p>    }<br/>
+    table_resized();<br/>
+    redraw();<br/>
+}
+</p>
+<p>// Resize parent window to size of table
+void MyTable::resize_window() {
+</p><p>    // Determine exact outer width of table with all columns visible
+    int width = 4;                                          // width of table borders
+    for ( int t=0; t&lt;cols(); t++ ) width += col_width(t);   // total width of all columns
+    width += MARGIN*2;<br/>
+    if ( width &lt; 200 || width &gt; Fl::w() ) return;
+    window()-&gt;resize(window()-&gt;x(), window()-&gt;y(), width, window()-&gt;h());  // resize window to fit
+}
+</p>
+<p>// Load table with output of 'cmd'<br/>
+void MyTable::load_command(const char *cmd) {
+</p><p>    char s[512];<br/>
+    FILE <em>fp = popen(cmd, "r");<br/>
+    cols(0);<br/>
+    for ( int r=0; fgets(s, sizeof(s)-1, fp); r++ ) {
+</p><pre>
+        // Add a new row
+        Row newrow; <u>rowdata.push</u>back(newrow);
+        std::vector&lt;char</em>&gt; &amp;rc = <u>rowdata[r].cols;
+        // Break line into separate word 'columns'
+        char *ss;
+        const char *delim = " \t\n";
+        for(int t=0; (t==0)?(ss=strtok(s,delim)):(ss=strtok(NULL,delim)); t++) {
+            rc.push</u>back(strdup(ss));
+        }
+        // Keep track of max # columns
+        if ( (int)rc.size() &gt; cols() ) {
+            cols((int)rc.size());
+        }
+</pre>
+<p>    } <br/>
+    // How many rows we loaded<br/>
+    rows((int)_rowdata.size()); <br/>
+    // Auto-calculate widths, with 20 pixel padding
+    autowidth(20);<br/>
+}
+</p>
+<p>// Callback whenever someone clicks on different parts of the table
+void MyTable::event_callback(Fl_Widget*, void *data) {
+</p><p>    MyTable <em>o = (MyTable</em>)data;<br/>
+    o-&gt;event_callback2();<br/>
+}
+</p>
+<p>void MyTable::event_callback2() {
+</p><p>    //int ROW = callback_row();                 // unused
+    int COL = callback_col();<br/>
+    TableContext context = callback_context();
+    switch ( context ) {
+</p><pre>
+        case CONTEXT_COL_HEADER: {              // someone clicked on column header
+            if ( Fl::event() == FL_RELEASE &amp;&amp; Fl::event_button() == 1 ) {
+                if ( <u>sort</u>lastcol == COL ) {   // Click same column? Toggle sort
+                    <u>sort</u>reverse ^= 1;
+                } else {                        // Click diff column? Up sort 
+                    <u>sort</u>reverse = 0;
+                }
+                sort_column(COL, <u>sort</u>reverse);
+                <u>sort</u>lastcol = COL;
+            }
+            break;
+        }
+        default:
+            return;
+</pre>
+<p>    }<br/>
+}
+</p>
+<p>int main() {
+</p><p>    Fl_Double_Window win(900,500,"Table Sorting");
+</p><pre>
+        MyTable table(MARGIN, MARGIN, win.w()-MARGIN<em>2, win.h()-MARGIN</em>2);
+        table.selection_color(FL_YELLOW);
+        table.col_header(1);
+        table.col_resize(1);
+        table.when(FL_WHEN_RELEASE);            // handle table events on release
+        table.load_command(DIRCMD);             // load table with a directory listing
+        table.row_height_all(18);               // height of all rows
+        table.tooltip("Click on column headings to toggle column sorting");
+        table.color(FL_WHITE);
+</pre>
+<p>    win.end();<br/>
+    win.resizable(table);<br/>
+    table.resize_window();<br/>
+    win.show();<br/>
+    return(Fl::run());<br/>
+}
+</p>
+<p>//<br/>
+// End of "$Id: table-sort.cxx 11493 2016-03-31 21:50:34Z AlbrechtS $".
+//</p>
+
+</body>
+</html>

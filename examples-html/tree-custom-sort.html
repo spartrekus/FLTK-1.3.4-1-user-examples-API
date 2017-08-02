@@ -1,0 +1,100 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+<meta name="generator" content="HTML::TextToHTML v2.51"/>
+</head>
+<body>
+<p>//<br/>
+// "$Id: tree-custom-sort.cxx 11870 2016-08-11 12:37:30Z AlbrechtS $"
+//
+</p><pre>
+//      Simple Fl_Tree custom (numeric) sort example. - erco 12/16/2013
+//      Demonstrates custom sorting of Fl_Tree items.
+</pre>
+<p>//<br/>
+// Copyright 2013 Greg Ercolano.<br/>
+// Copyright 1998-2010 by Bill Spitzak and others.
+//<br/>
+// This library is free software. Distribution and use rights are outlined in
+// the file "COPYING" which should have been included with this file.  If this
+// file is missing or damaged, see the license at:
+//<br/>
+//     <a href="http://www.fltk.org/COPYING.php">http://www.fltk.org/COPYING.php</a><br/>
+//<br/>
+// Please report all bugs and problems on the following page:
+//<br/>
+//     <a href="http://www.fltk.org/str.php">http://www.fltk.org/str.php</a><br/>
+//<br/>
+#include &lt;stdio.h&gt;
+</p><pre>
+#include &lt;stdlib.h&gt;     /* qsort(3), srand(3).. <em>/
+#include &lt;time.h&gt;       /</em> time(2) */
+</pre>
+<p>#include &lt;FL/Fl.H&gt;<br/>
+#include &lt;FL/Fl_Double_Window.H&gt;<br/>
+#include &lt;FL/Fl_Tree.H&gt;<br/>
+#include &lt;FL/Fl_Button.H&gt;
+</p>
+<p>Fl_Tree *G_tree = 0;
+</p>
+<p>// Resort the tree<br/>
+void MySortCallback(Fl_Widget*, void *data) {
+  int dir = int(fl_intptr_t(data));             // forward or reverse
+  Fl_Tree_Item *i = G_tree-&gt;root();<br/>
+  // Bubble sort<br/>
+  for ( int ax=0; ax&lt;i-&gt;children(); ax++ ) {
+    for ( int bx=ax+1; bx&lt;i-&gt;children(); bx++ ) {
+</p><pre>
+      long a; sscanf(i-&gt;child(ax)-&gt;label(), "%ld", &amp;a);
+      long b; sscanf(i-&gt;child(bx)-&gt;label(), "%ld", &amp;b);
+      switch ( dir ) {
+        case  1: if ( a &gt; b ) { i-&gt;swap_children(ax, bx); } break; // fwd
+        case -1: if ( a &lt; b ) { i-&gt;swap_children(ax, bx); } break; // rev
+      }
+</pre>
+<p>    }<br/>
+  }<br/>
+  G_tree-&gt;redraw();<br/>
+}
+</p>
+<p>int main(int argc, char *argv[]) {<br/>
+  // Randomize the random number generator
+  time_t tval; time(&amp;tval);<br/>
+  srand((unsigned)tval);
+</p>
+<p>  // Create window with tree<br/>
+  Fl::scheme("gtk+");<br/>
+  Fl_Double_Window *win = new Fl_Double_Window(250, 600, "Numeric Sort Tree");
+  win-&gt;begin();<br/>
+  {<br/>
+    G_tree = new Fl_Tree(10, 10, win-&gt;w()-20, win-&gt;h()-60);
+    G_tree-&gt;showroot(0);
+</p>
+<p>    // Add 200 random numbers to the tree
+    char word[50];<br/>
+    for ( int t=0; t&lt;200; t++ ) {
+</p><pre>
+      sprintf(word, "%ld", long((float(rand()) / RAND_MAX) * 1000000));
+      G_tree-&gt;add(word);
+</pre>
+<p>    }
+</p>
+<p>    // Add some sort buttons<br/>
+    Fl_Button <em>but;<br/>
+    but = new Fl_Button(10,   win-&gt;h()-40,80,20,"Fwd"); but-&gt;callback(MySortCallback, (void</em>) 1);
+    but = new Fl_Button(20+80,win-&gt;h()-40,80,20,"Rev"); but-&gt;callback(MySortCallback, (void*)-1);
+  }<br/>
+  win-&gt;end();<br/>
+  win-&gt;resizable(win);<br/>
+  win-&gt;show(argc, argv);<br/>
+  return(Fl::run());<br/>
+}
+</p>
+<p>//<br/>
+// End of "$Id: tree-custom-sort.cxx 11870 2016-08-11 12:37:30Z AlbrechtS $".
+//</p>
+
+</body>
+</html>

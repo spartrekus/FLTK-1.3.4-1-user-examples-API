@@ -1,0 +1,178 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+<meta name="generator" content="HTML::TextToHTML v2.51"/>
+</head>
+<body>
+<p>//<br/>
+// "$Id: tree-of-tables.cxx 10040 2014-01-01 17:13:48Z greg.ercolano $"
+//<br/>
+//      Fl_Tree as a container of Fl_Table's. - erco 04/25/2012
+//
+</p><pre>
+//      Demonstrates how one can make a tree where each item
+//      contains a complex widget.
+</pre>
+<p>//<br/>
+// Copyright 2010,2012 Greg Ercolano.<br/>
+// Copyright 1998-2010 by Bill Spitzak and others.
+//<br/>
+// This library is free software. Distribution and use rights are outlined in
+// the file "COPYING" which should have been included with this file.  If this
+// file is missing or damaged, see the license at:
+//<br/>
+//     <a href="http://www.fltk.org/COPYING.php">http://www.fltk.org/COPYING.php</a><br/>
+//<br/>
+// Please report all bugs and problems on the following page:
+//<br/>
+//     <a href="http://www.fltk.org/str.php">http://www.fltk.org/str.php</a><br/>
+//<br/>
+#include &lt;stdio.h&gt;<br/>
+#include &lt;math.h&gt;               // powf()
+#include &lt;FL/Fl.H&gt;<br/>
+#include &lt;FL/Fl_Double_Window.H&gt;<br/>
+#include &lt;FL/Fl_Tree.H&gt;<br/>
+#include &lt;FL/Fl_Table.H&gt;<br/>
+#ifndef PI<br/>
+#define PI 3.14159<br/>
+#endif
+</p>
+<p>#if FLTK_ABI_VERSION &gt;= 10301<br/>
+class MyTable : public Fl_Table {<br/>
+  const char *mode;<br/>
+public:<br/>
+  MyTable(int X,int Y,int W,int H,const char <em>mode) : Fl_Table(X,Y,W,H) {
+    rows(11); row_height_all(20); row_header(1);
+    cols(11); col_width_all(60);  col_header(1);
+    col_resize(1);                              // enable column resizing
+    this-&gt;mode = mode;<br/>
+    end();<br/>
+  }<br/>
+  void resize(int X,int Y,int W,int H) {
+</p><pre>
+      if ( W &gt; 718 ) W = 718;                   // don't exceed 700 in width
+      Fl_Table::resize(X,Y,W,h());              // disallow changes in height
+</pre>
+<p>  }<br/>
+  // Handle drawing table's cells
+</p><pre>
+  //     Fl_Table calls this function to draw each visible cell in the table.
+  //     It's up to us to use FLTK's drawing functions to draw the cells the way we want.
+</pre>
+<p>  //<br/>
+  void draw_cell(TableContext context, int ROW, int COL, int X, int Y, int W, int H) {
+    static char s[40];<br/>
+    switch ( context ) {
+</p><pre>
+      case CONTEXT_STARTPAGE:         // before page is drawn..
+        fl_font(FL_HELVETICA, 10);    // set the font for our drawing operations
+        return; 
+      case CONTEXT_COL_HEADER:        // Drawing column/row headers
+      case CONTEXT_ROW_HEADER: {
+        int val = context==CONTEXT_COL_HEADER ? COL : ROW;
+        int col = context==CONTEXT_COL_HEADER ? col_header_color() : row_header_color();
+        fl_push_clip(X,Y,W,H);
+        if ( strcmp(mode, "SinCos" ) == 0 ) { sprintf(s, "%.2f", ((val/10.0)</em>PI)); }
+        else sprintf(s,"%d",val);
+        fl_draw_box(FL_THIN_UP_BOX, X,Y,W,H, col);
+        fl_color(FL_BLACK);
+        fl_draw(s, X,Y,W,H, FL_ALIGN_CENTER);
+        fl_pop_clip();
+        return; 
+      }
+      case CONTEXT_CELL: {            // Draw data in cells
+        int col = is_selected(ROW,COL) ? FL_YELLOW : FL_WHITE;
+        fl_push_clip(X,Y,W,H);
+        if ( strcmp(mode, "Addition") == 0 ) { sprintf(s, "%d", ROW+COL); } else
+        if ( strcmp(mode, "Subtract") == 0 ) { sprintf(s, "%d", ROW-COL); } else
+        if ( strcmp(mode, "Multiply") == 0 ) { sprintf(s, "%d", ROW<em>COL); } else
+        if ( strcmp(mode, "Divide"  ) == 0 ) { if ( COL==0 ) sprintf(s, "N/A"); else sprintf(s, "%.2f", (float)ROW/(float)COL); } else
+        if ( strcmp(mode, "Exponent") == 0 ) { sprintf(s, "%g", powf((float)ROW,(float)COL)); } else
+        if ( strcmp(mode, "SinCos"  ) == 0 ) { sprintf(s, "%.2f", sin((ROW/10.0)</em>PI) <em> cos((COL/10.0)</em>PI)); } else
+                                             { sprintf(s, "???"); }
+        fl_color(col); fl_rectf(X,Y,W,H);                               // bg
+        fl_color(FL_GRAY0); fl_draw(s, X,Y,W,H, FL_ALIGN_CENTER);       // text
+        fl_color(color());  fl_rect(X,Y,W,H);                           // box
+        fl_pop_clip();
+        return;
+      }
+      default:
+        return;
+</pre>
+<p>    }<br/>
+  }<br/>
+};
+</p>
+<p>int main(int argc, char *argv[]) {<br/>
+  Fl_Double_Window *win = new Fl_Double_Window(700, 400, "Tree of tables");
+  win-&gt;begin();<br/>
+  {<br/>
+    // Create tree<br/>
+    Fl_Tree *tree = new Fl_Tree(10, 10, win-&gt;w()-20, win-&gt;h()-20);
+    tree-&gt;root()-&gt;label("Math Tables");
+</p><pre>
+    tree-&gt;item_labelfont(FL_COURIER);           // font to use for items
+    tree-&gt;linespacing(4);                       // extra space between items
+    tree-&gt;item_draw_mode(tree-&gt;item_draw_mode() |
+                         FL_TREE_ITEM_DRAW_LABEL_AND_WIDGET |    // draw item with widget() next to it
+                         FL_TREE_ITEM_HEIGHT_FROM_WIDGET);       // make item height follow table's height
+    tree-&gt;selectmode(FL_TREE_SELECT_NONE);      // font to use for items
+    tree-&gt;widgetmarginleft(12);                 // space between item and table
+</pre>
+<p>    tree-&gt;connectorstyle(FL_TREE_CONNECTOR_DOTTED);
+</p>
+<p>    // Create tables, assign each a tree item
+    tree-&gt;begin();<br/>
+    {
+</p><pre>
+      MyTable *table;
+      Fl_Tree_Item *item;
+
+      table = new MyTable(0,0,500,156,"Addition");
+      item = tree-&gt;add("Arithmetic/Addition");
+      item-&gt;widget(table);
+
+      table = new MyTable(0,0,500,156,"Subtract");
+      item = tree-&gt;add("Arithmetic/Subtract");
+      item-&gt;widget(table);
+
+      table = new MyTable(0,0,500,156,"Multiply");
+      item = tree-&gt;add("Arithmetic/Multiply");
+      item-&gt;widget(table);
+
+      table = new MyTable(0,0,500,156,"Divide");
+      item = tree-&gt;add("Arithmetic/Divide  ");
+      item-&gt;widget(table);
+
+      table = new MyTable(0,0,500,156,"Exponent");
+      item = tree-&gt;add("Misc/Exponent");
+      item-&gt;widget(table);
+
+      table = new MyTable(0,0,500,156,"SinCos");
+      item = tree-&gt;add("Misc/Sin<em>Cos ");
+      item-&gt;widget(table);
+</pre>
+<p>    }<br/>
+    tree-&gt;end();<br/>
+  }<br/>
+  win-&gt;end();<br/>
+  win-&gt;resizable(win);<br/>
+  win-&gt;show(argc, argv);<br/>
+  return(Fl::run());<br/>
+}<br/>
+#else /</em>FLTK_ABI_VERSION*/<br/>
+#include &lt;FL/fl_ask.H&gt;<br/>
+int main(int argc, char *argv[]) {<br/>
+  fl_alert("This example must have FLTK_ABI_VERSION enabled to work properly.");
+  return 1;<br/>
+}<br/>
+#endif
+</p>
+<p>//<br/>
+// End of "$Id: tree-of-tables.cxx 10040 2014-01-01 17:13:48Z greg.ercolano $".
+//</p>
+
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+<meta name="generator" content="HTML::TextToHTML v2.51"/>
+</head>
+<body>
+<p>//<br/>
+// "$Id: clipboard.cxx 11712 2016-05-05 07:21:24Z manolo $"
+//<br/>
+// Clipboard display test application for the Fast Light Tool Kit (FLTK).
+//<br/>
+// Copyright 1998-2014 by Bill Spitzak and others.
+//<br/>
+// This library is free software. Distribution and use rights are outlined in
+// the file "COPYING" which should have been included with this file.  If this
+// file is missing or damaged, see the license at:
+//<br/>
+//     <a href="http://www.fltk.org/COPYING.php">http://www.fltk.org/COPYING.php</a><br/>
+//<br/>
+// Please report all bugs and problems on the following page:
+//<br/>
+//     <a href="http://www.fltk.org/str.php">http://www.fltk.org/str.php</a><br/>
+//
+</p>
+<p>#include &lt;FL/Fl_Window.H&gt;<br/>
+#include &lt;FL/Fl_Box.H&gt;<br/>
+#include &lt;FL/Fl_Image.H&gt;<br/>
+#include &lt;FL/Fl_Text_Buffer.H&gt;<br/>
+#include &lt;FL/Fl_Text_Display.H&gt;<br/>
+#include &lt;FL/Fl_Tabs.H&gt;<br/>
+#include &lt;FL/Fl_Button.H&gt;<br/>
+#include &lt;FL/Fl.H&gt;<br/>
+#include &lt;FL/fl_draw.H&gt;<br/>
+#ifdef WIN32<br/>
+#include &lt;windows.h&gt;<br/>
+#endif // WIN32
+</p>
+<p>/* Displays and follows the content of the clipboard with either image or text data
+ */
+</p>
+<p>Fl_Box *image_box;<br/>
+Fl_Box *image_size;<br/>
+Fl_Text_Display *display;
+</p>
+<p>class chess : public Fl_Box { // a box with a chess-like pattern below its image
+public:<br/>
+  chess(int x, int y, int w, int h) : Fl_Box(FL_FLAT_BOX,x,y,w,h,0) {
+    align(FL_ALIGN_CENTER | FL_ALIGN_CLIP);
+  }<br/>
+  void draw() {<br/>
+    draw_box();<br/>
+    Fl_Image <em>im = image();<br/>
+    if (im) { // draw the chess pattern below the box centered image
+</p><pre>
+      int X = x() + (w()-im-&gt;w())/2, Y = y() + (h()-im-&gt;h())/2, W = im-&gt;w(), H = im-&gt;h();
+      fl_push_clip(X,Y,W,H);
+      fl_push_clip(x(),y(),w(),h());
+      fl_color(FL_WHITE); fl_rectf(X,Y,W,H);
+      fl_color(FL_LIGHT2);
+      const int side = 4, side2 = 2</em>side;
+      for (int j=Y; j&lt;Y+H; j+=side) {
+        for (int i=X + (j-Y)%side2; i&lt;X+W; i+=side2) {
+          fl_rectf(i,j,side,side);
+        }
+      }
+      fl_pop_clip();
+      fl_pop_clip();
+</pre>
+<p>    }<br/>
+    draw_label(); // draw the box image
+  }<br/>
+} *chess_obj;
+</p>
+<p>#define TAB_COLOR FL_DARK3
+</p>
+<p>class clipboard_viewer : public Fl_Tabs { // use tabs to display as appropriate the image or textual content of the clipboard
+public:<br/>
+  clipboard_viewer(int x, int y, int w, int h) : Fl_Tabs(x,y,w,h) {};
+  virtual int handle(int event) {<br/>
+    if (event != FL_PASTE) return Fl_Tabs::handle(event);
+    if (strcmp(Fl::event_clipboard_type(), Fl::clipboard_image) == 0) { // an image is being pasted
+</p><pre>
+      Fl_Image <em>im = (Fl_Image</em>)Fl::event_clipboard(); // get it as an Fl_Image object
+      if (!im) return 1;
+      char title[300];
+      sprintf(title, "%dx%d",im-&gt;w(), im-&gt;h()); // display the image original size
+#ifdef WIN32
+      OpenClipboard(NULL); // display extra technical info about clipboard content
+      char *p=title + strlen(title);
+      int format = EnumClipboardFormats(0);
+      if (format &amp;&amp; format &lt; CF_MAX) { sprintf(p, " %d",format); p += strlen(p); }
+      while (format) {
+        format = EnumClipboardFormats(format);
+        if (format &amp;&amp; format &lt; CF_MAX) { sprintf(p, " %d",format); p += strlen(p); }
+      }
+      HANDLE h;
+      if ((h = GetClipboardData(CF_DIB))) {
+        LPBITMAPINFO lpBI = (LPBITMAPINFO)GlobalLock(h);
+        sprintf(p, " biBitCount=%d biCompression=%d biClrUsed=%d",
+                lpBI-&gt;bmiHeader.biBitCount, (int)lpBI-&gt;bmiHeader.biCompression, (int)lpBI-&gt;bmiHeader.biClrUsed);
+      }
+      CloseClipboard();
+#endif
+      float scale_x =  (float)im-&gt;w() / image_box-&gt;w(); // rescale the image if larger than the display box
+      float scale_y =  (float)im-&gt;h() / image_box-&gt;h();
+      float scale = scale_x;
+      if (scale_y &gt; scale) scale = scale_y;
+      if (scale &gt; 1) {
+        Fl_Image *im2 = im-&gt;copy(im-&gt;w()/scale, im-&gt;h()/scale);
+        delete im;
+        im = im2;
+      }
+      Fl_Image *oldim = image_box-&gt;image();
+      if (oldim) delete oldim;
+      image_box-&gt;image(im); // show the scaled image
+      image_size-&gt;copy_label(title);
+      value(image_box-&gt;parent());
+      window()-&gt;redraw();
+</pre>
+<p>    }<br/>
+    else { // text is being pasted
+</p><pre>
+      display-&gt;buffer()-&gt;text(Fl::event_text());
+      value(display);
+      display-&gt;redraw();
+</pre>
+<p>    }<br/>
+    return 1;<br/>
+  }<br/>
+} *tabs;
+</p>
+<p>void cb(Fl_Widget *wid, clipboard_viewer <em>tabs)
+{<br/>
+  if (Fl::clipboard_contains(Fl::clipboard_image)) {
+    Fl::paste(</em>tabs, 1, Fl::clipboard_image); // try to find image in the clipboard
+    return;<br/>
+  }<br/>
+  if (Fl::clipboard_contains(Fl::clipboard_plain_text)) Fl::paste(*tabs, 1, Fl::clipboard_plain_text); // also try to find text
+}
+</p>
+<p>void clip_callback(int source, void *data) { // called after clipboard was changed or at application activation
+  if ( source == 1 ) cb(NULL, (clipboard_viewer *)data);
+}
+</p>
+<p>int main(int argc, char **argv)<br/>
+{<br/>
+#if !(defined(__APPLE__) || defined(WIN32))
+  extern void fl_register_images();<br/>
+  fl_register_images(); // required to allow pasting of images
+#endif<br/>
+  Fl_Window* win = new Fl_Window(500, 550, "clipboard viewer");
+  tabs = new clipboard_viewer(0, 0, 500, 500);
+  Fl_Group *g = new Fl_Group( 5, 30, 490, 460, Fl::clipboard_image); // g will display the image form
+  g-&gt;box(FL_FLAT_BOX);<br/>
+  image_box = new chess(5, 30, 490, 450);
+  image_size = new Fl_Box(FL_NO_BOX, 5, 485, 490, 10, 0);
+  g-&gt;end();<br/>
+  g-&gt;selection_color(TAB_COLOR);
+</p>
+<p>  Fl_Text_Buffer *buffer = new Fl_Text_Buffer();
+  display = new Fl_Text_Display(5,30,490, 460, Fl::clipboard_plain_text); // display will display the text form
+  display-&gt;buffer(buffer);<br/>
+  display-&gt;selection_color(TAB_COLOR);<br/>
+  tabs-&gt;end();<br/>
+  tabs-&gt;resizable(display);
+</p>
+<p>  Fl_Group *g2 = new Fl_Group( 10,510,200,25);
+  Fl_Button <em>refresh = new Fl_Button(10,510,200,25, "Refresh from clipboard");
+  refresh-&gt;callback((Fl_Callback</em>)cb, tabs);
+  g2-&gt;end();<br/>
+  g2-&gt;resizable(NULL);<br/>
+  win-&gt;end();<br/>
+  win-&gt;resizable(tabs);<br/>
+  win-&gt;show(argc,argv);<br/>
+  clip_callback(1, tabs); // use clipboard content at start
+  Fl::add_clipboard_notify(clip_callback, tabs); // will update with new clipboard content immediately or at application activation
+</p>
+<p>  Fl_Image::RGB_scaling(FL_RGB_SCALING_BILINEAR); // set bilinear image scaling method
+  return Fl::run();<br/>
+}
+</p>
+<p>//<br/>
+// End of "$Id: clipboard.cxx 11712 2016-05-05 07:21:24Z manolo $".
+//</p>
+
+</body>
+</html>

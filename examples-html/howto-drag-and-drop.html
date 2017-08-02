@@ -1,0 +1,111 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+<meta name="generator" content="HTML::TextToHTML v2.51"/>
+</head>
+<body>
+<p>//<br/>
+// "$Id: howto-drag-and-drop.cxx 8864 2011-07-19 04:49:30Z greg.ercolano $"
+//
+</p><pre>
+//     A simple demo of drag+drop with FLTK. 
+//     Originally from erco's cheat sheet, permission by author.
+//     Inspired by Michael Sephton's original example posted on fltk.general.
+//
+//     When you run the program, just drag the red square over
+//     to the green square to show a 'drag and drop' sequence.
+</pre>
+<p>//<br/>
+// Copyright 1998-2010 by Bill Spitzak and others.
+//<br/>
+// This library is free software. Distribution and use rights are outlined in
+// the file "COPYING" which should have been included with this file.  If this
+// file is missing or damaged, see the license at:
+//<br/>
+//     <a href="http://www.fltk.org/COPYING.php">http://www.fltk.org/COPYING.php</a><br/>
+//<br/>
+// Please report all bugs and problems on the following page:
+//<br/>
+//     <a href="http://www.fltk.org/str.php">http://www.fltk.org/str.php</a><br/>
+//
+</p>
+<p>#include &lt;stdio.h&gt;<br/>
+#include &lt;FL/Fl.H&gt;<br/>
+#include &lt;FL/Fl_Window.H&gt;<br/>
+#include &lt;FL/Fl_Box.H&gt;
+</p>
+<p><strong>// SIMPLE SENDER CLASS</strong><br/>
+class Sender : public Fl_Box {<br/>
+public:<br/>
+  // Ctor<br/>
+  Sender(int x,int y,int w,int h) : Fl_Box(x,y,w,h) {
+    box(FL_FLAT_BOX);<br/>
+    color(9);<br/>
+    label("Drag\nfrom\nhere..");<br/>
+  }<br/>
+  // Sender event handler<br/>
+  int handle(int event) {<br/>
+    int ret = Fl_Box::handle(event);<br/>
+    switch ( event ) {
+</p><pre>
+      case FL_PUSH: {             // do 'copy/dnd' when someone clicks on box
+        const char <em>msg = "It works!";
+        Fl::copy(msg,strlen(msg),0);
+        Fl::dnd();
+        ret = 1;
+        break;
+      }
+</pre>
+<p>    }<br/>
+    return(ret);<br/>
+  }<br/>
+};<br/>
+<strong>// SIMPLE RECEIVER CLASS</strong><br/>
+class Receiver : public Fl_Box {<br/>
+public:<br/>
+  // Ctor<br/>
+  Receiver(int x,int y,int w,int h) : Fl_Box(x,y,w,h) {
+    box(FL_FLAT_BOX); color(10); label("..to\nhere");
+  }<br/>
+  // Receiver event handler<br/>
+  int handle(int event) {<br/>
+    int ret = Fl_Box::handle(event);<br/>
+    switch ( event ) {
+</p><pre>
+      case FL_DND_ENTER:          // return(1) for these events to 'accept' dnd
+      case FL_DND_DRAG:
+      case FL_DND_RELEASE:
+        ret = 1;
+        break;
+      case FL_PASTE:              // handle actual drop (paste) operation
+        label(Fl::event_text());
+        fprintf(stderr, "Pasted '%s'\n", Fl::event_text());
+        ret = 1;
+        break;
+</pre>
+<p>    }<br/>
+    return(ret);<br/>
+  }<br/>
+};<br/>
+int main(int argc, char *</em>argv) {<br/>
+  // Create sender window and widget<br/>
+  Fl_Window win_a(0,0,200,100,"Sender");
+  Sender a(0,0,100,100);<br/>
+  win_a.end();<br/>
+  win_a.show();<br/>
+  // Create receiver window and widget<br/>
+  Fl_Window win_b(400,0,200,100,"Receiver");
+  Receiver b(100,0,100,100);<br/>
+  win_b.end();<br/>
+  win_b.show();<br/>
+  return(Fl::run());<br/>
+}
+</p>
+<p>//<br/>
+// End of "$Id: howto-drag-and-drop.cxx 8864 2011-07-19 04:49:30Z greg.ercolano $".
+//</p>
+
+</body>
+</html>

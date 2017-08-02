@@ -1,0 +1,91 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+<meta name="generator" content="HTML::TextToHTML v2.51"/>
+</head>
+<body>
+<p>//<br/>
+// "$Id: howto-add_fd-and-popen.cxx 11870 2016-08-11 12:37:30Z AlbrechtS $"
+//
+</p><pre>
+//     How to use popen() and Fl::add_fd() - erco 10/04/04
+//     Originally from erco's cheat sheet, permission by author.
+//
+//     Shows how the interface can remain "alive" while external
+//     command is running and outputing occassional data. For instance,
+//     while the command is running, keyboard navigation works,
+//     text can be highlighted, and the interface can be resized.
+</pre>
+<p>//<br/>
+// Copyright 2010 Greg Ercolano.<br/>
+// Copyright 1998-2010 by Bill Spitzak and others.
+//<br/>
+// This library is free software. Distribution and use rights are outlined in
+// the file "COPYING" which should have been included with this file.  If this
+// file is missing or damaged, see the license at:
+//<br/>
+//     <a href="http://www.fltk.org/COPYING.php">http://www.fltk.org/COPYING.php</a><br/>
+//<br/>
+// Please report all bugs and problems on the following page:
+//<br/>
+//     <a href="http://www.fltk.org/str.php">http://www.fltk.org/str.php</a><br/>
+//<br/>
+#include &lt;stdio.h&gt;<br/>
+#include &lt;FL/Fl.H&gt;<br/>
+#include &lt;FL/Fl_Window.H&gt;<br/>
+#include &lt;FL/Fl_Multi_Browser.H&gt;
+</p>
+<p>#ifdef WIN32<br/>
+#  define PING_CMD "ping -n 10 localhost"       // 'slow command' under windows
+#  ifdef <u>MSC</u>VER<br/>
+#    define popen _popen<br/>
+#    define pclose <u>pclose<br/>
+#  else /<em></u>MSC_VER</em>/<br/>
+#    include &lt;unistd.h&gt;                         // non-MS win32 compilers (untested)
+#  endif /<em><u>MSC</u>VER</em>/<br/>
+#else<br/>
+#  include &lt;unistd.h&gt;<br/>
+#  define PING_CMD "ping -i 2 -c 10 localhost"  // 'slow command' under unix
+#endif
+</p>
+<p><strong>// GLOBALS</strong><br/>
+FILE *G_fp = NULL;
+</p>
+<p>// Handler for add_fd() -- called whenever the ping command outputs a new line of data
+// Note: FL_SOCKET as 1st argument is used to fix a compiler error(!) on Windows 64-bit.
+// Unfortunately we need this in FLTK 1.3 - should hopefully be fixed in 1.4 with a better solution.
+void HandleFD(FL_SOCKET fd, void *data) {
+  Fl_Multi_Browser <em>brow = (Fl_Multi_Browser</em>)data;
+  char s[1024];
+</p><pre>
+  if ( fgets(s, 1023, G_fp) == NULL ) {         // read the line of data
+    Fl::remove_fd(fileno(G_fp));                // command ended? disconnect callback
+    pclose(G_fp);                               // close the descriptor
+    brow-&gt;add(""); brow-&gt;add("&lt;&lt;DONE&gt;&gt;");       // append msg indicating command finished
+</pre>
+<p>    return;<br/>
+  }<br/>
+  brow-&gt;add(s);                                 // line of data read? append to widget
+}
+</p>
+<p>int main(int argc, char <em>argv[]) {<br/>
+  Fl_Window win(600,600);<br/>
+  Fl_Multi_Browser brow(10,10,580,580);
+  if ( ( G_fp = popen(PING_CMD, "r") ) == NULL ) {      // start the external unix command
+    perror("popen failed");<br/>
+    return(1);<br/>
+  }<br/>
+  Fl::add_fd(fileno(G_fp), HandleFD, (void</em>)&amp;brow);     // setup a callback for the popen()ed descriptor
+  win.resizable(brow);<br/>
+  win.show(argc, argv);<br/>
+  return(Fl::run());<br/>
+}
+</p>
+<p>//<br/>
+// End of "$Id: howto-add_fd-and-popen.cxx 11870 2016-08-11 12:37:30Z AlbrechtS $".
+//</p>
+
+</body>
+</html>

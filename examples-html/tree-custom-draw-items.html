@@ -1,0 +1,213 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+<meta name="generator" content="HTML::TextToHTML v2.51"/>
+</head>
+<body>
+<p>//<br/>
+// "$Id: tree-custom-draw-items.cxx 10071 2014-01-20 21:23:24Z greg.ercolano $"
+//<br/>
+//      Demonstrate Fl_Tree custom item draw callback. - erco 11/09/2013
+//<br/>
+// Copyright 2013 Greg Ercolano.<br/>
+// Copyright 1998-2013 by Bill Spitzak and others.
+//<br/>
+// This library is free software. Distribution and use rights are outlined in
+// the file "COPYING" which should have been included with this file.  If this
+// file is missing or damaged, see the license at:
+//<br/>
+//     <a href="http://www.fltk.org/COPYING.php">http://www.fltk.org/COPYING.php</a><br/>
+//<br/>
+// Please report all bugs and problems on the following page:
+//<br/>
+//     <a href="http://www.fltk.org/str.php">http://www.fltk.org/str.php</a><br/>
+//<br/>
+#include &lt;stdio.h&gt;<br/>
+#include &lt;time.h&gt;               /* ctime.. */
+#include &lt;FL/Fl.H&gt;<br/>
+#include &lt;FL/Fl_Double_Window.H&gt;<br/>
+#include &lt;FL/Fl_Tree.H&gt;
+</p>
+<p>#ifndef MAX<br/>
+#define MAX(a,b) ((a)&gt;(b))?(a):(b)<br/>
+#endif
+</p>
+<p>#if FLTK_ABI_VERSION &gt;= 10303<br/>
+// DERIVE CUSTOM CLASS FROM Fl_Tree_Item TO IMPLEMENT SHOWING THE TIME OF DAY
+//     This demonstrates that item content can be dynamic and highly customized.
+//<br/>
+class MyTimeItem : public Fl_Tree_Item {
+  const char <em>time_format;<br/>
+protected:<br/>
+  // Remove trailing crlf<br/>
+  const char</em> StripCrlf(char *s)<br/>
+    { char *ss = strchr(s, '\n'); if (ss) <em>ss = 0; return s; }
+  const struct tm</em> GetTimeStruct() {<br/>
+    time_t t = time(NULL);<br/>
+    if ( strcmp(time_format, "Local") == 0 ) return localtime(&amp;t);
+    if ( strcmp(time_format, "GMT"  ) == 0 ) return gmtime(&amp;t);
+    return 0;<br/>
+  }<br/>
+public:<br/>
+  MyTimeItem(Fl_Tree *tree, const char *time_format) : Fl_Tree_Item(tree) {
+    label(time_format);<br/>
+    this-&gt;time_format = time_format;<br/>
+  }<br/>
+  // Handle custom drawing of the item<br/>
+  //    Fl_Tree has already handled drawing everything to the left
+  //    of the label area, including any 'user icon', collapse buttons,
+  //    connector lines, etc.<br/>
+  //<br/>
+  //    All we're responsible for is drawing the 'label' area of the item
+  //    and it's background. Fl_Tree gives us a hint as to what the
+  //    foreground and background colors should be via the fg/bg parameters,
+  //    and whether we're supposed to render anything or not.
+  //<br/>
+  //    The only other thing we must do is return the maximum X position
+  //    of scrollable content, i.e. the right most X position of content
+  //    that we want the user to be able to use the horizontal scrollbar
+  //    to reach.<br/>
+  //<br/>
+  int draw_item_content(int render) {<br/>
+    Fl_Color fg = drawfgcolor();<br/>
+    Fl_Color bg = drawbgcolor();<br/>
+    //    Show the date and time as two small strings
+    //    one on top of the other in a single item.
+    //<br/>
+    // Our item's label dimensions<br/>
+    int X = label_x(), Y = label_y(),
+</p><p>        W = label_w(), H = label_h(); <br/>
+    // Render background<br/>
+    if ( render ) {
+</p><pre>
+      if ( is_selected() ) {                    // Selected? Use selectbox() style
+        fl_draw_box(prefs().selectbox(),X,Y,W,H,bg);
+      } else {                                  // Not Selected? use plain filled rectangle
+        fl_color(bg); fl_rectf(X,Y,W,H);
+      }
+</pre>
+<p>    }<br/>
+    // Render the label<br/>
+    if ( render ) {
+</p><pre>
+      fl_color(fg);
+      if ( label() ) fl_draw(label(), X,Y,W,H, FL_ALIGN_LEFT);
+</pre>
+<p>    }<br/>
+    int lw=0, lh=0;<br/>
+    if ( label() ) {<br/>
+      lw=0; lh=0; fl_measure(label(), lw, lh);
+    }<br/>
+    X += lw + 8;<br/>
+    // Draw some red/grn/blu boxes<br/>
+    if ( render ) {
+</p><pre>
+      fl_color(FL_RED);   fl_rectf(X+0,  Y+2, 10, H-4);
+      fl_color(FL_GREEN); fl_rectf(X+10, Y+2, 10, H-4);
+      fl_color(FL_BLUE);  fl_rectf(X+20, Y+2, 10, H-4);
+</pre>
+<p>    }<br/>
+    X += 35;<br/>
+    // Render the date and time, one over the other
+    fl_font(labelfont(), 8);                    // small font
+    const struct tm *tm = GetTimeStruct();
+    char s[80];<br/>
+    sprintf(s, "Date: %02d/%02d/%02d", tm-&gt;tm_mon+1, tm-&gt;tm_mday, tm-&gt;tm_year % 100);
+    lw=0, lh=0; fl_measure(s, lw, lh);          // get box around text (including white space)
+    if ( render ) fl_draw(s, X,Y+4,W,H, FL_ALIGN_LEFT|FL_ALIGN_TOP);
+    sprintf(s, "Time: %02d:%02d:%02d", tm-&gt;tm_hour, tm-&gt;tm_min, tm-&gt;tm_sec);
+    if ( render ) fl_draw(s, X,Y+H/2,W,H/2, FL_ALIGN_LEFT|FL_ALIGN_TOP);
+    int lw2=0, lh2=0; fl_measure(s, lw2, lh2);
+    X += MAX(lw, lw2);<br/>
+    return X;                   // return right most edge of what we've rendered
+  }<br/>
+};
+</p>
+<p><strong>// TIMER TO HANDLE DYNAMIC CONTENT IN THE TREE</strong>
+void Timer_CB(void *data) {<br/>
+  Fl_Tree <em>tree = (Fl_Tree</em>)data;<br/>
+  tree-&gt;redraw();       // keeps time updated
+  Fl::repeat_timeout(0.2, Timer_CB, data);
+}
+</p>
+<p>int main(int argc, char *argv[]) {<br/>
+  Fl::scheme("gtk+");<br/>
+  Fl_Double_Window *win = new Fl_Double_Window(350, 400, "Simple Tree");
+  win-&gt;begin();<br/>
+  {<br/>
+    // Create the tree<br/>
+    Fl_Tree *tree = new Fl_Tree(0, 0, win-&gt;w(), win-&gt;h());
+</p><pre>
+    tree-&gt;showroot(0);                          // don't show root of tree
+    tree-&gt;selectmode(FL_TREE_SELECT_MULTI);     // multiselect
+</pre>
+<p>    // Add some items<br/>
+    tree-&gt;add("Flintstones/Fred");<br/>
+    tree-&gt;add("Flintstones/Wilma");<br/>
+    tree-&gt;add("Flintstones/Pebbles");<br/>
+    {
+</p><pre>
+      MyTimeItem *myitem;
+      myitem = new MyTimeItem(tree, "Local");   // create custom item
+      myitem-&gt;labelsize(20);
+      tree-&gt;add("Time Add Item/Local", myitem);
+
+      myitem = new MyTimeItem(tree, "GMT");     // create custom item
+      myitem-&gt;labelsize(20);
+      tree-&gt;add("Time Add Item/GMT", myitem);
+</pre>
+<p>    }<br/>
+    // 'Replace' approach<br/>
+    {
+</p><pre>
+      Fl_Tree_Item *item;
+      MyTimeItem *myitem;
+      item = tree-&gt;add("Time Replace Item/Local Time");
+      // Replace the 'Local' item with our own
+      myitem = new MyTimeItem(tree, "Local");   // create custom item
+      myitem-&gt;labelsize(20);
+      item-&gt;replace(myitem);                    // replace normal item with custom
+
+      item = tree-&gt;add("Time Replace Item/GMT Time");
+      // Replace the 'GMT' item with our own
+      myitem = new MyTimeItem(tree, "GMT");     // create custom item
+      myitem-&gt;labelsize(20);
+      item-&gt;replace(myitem);                    // replace normal item with custom
+</pre>
+<p>    }<br/>
+    tree-&gt;add("Superjail/Warden");<br/>
+    tree-&gt;add("Superjail/Jared");<br/>
+    tree-&gt;add("Superjail/Alice");<br/>
+    tree-&gt;add("Superjail/Jailbot");
+</p>
+<p>    tree-&gt;show_self();
+</p>
+<p>    // Start with some items closed<br/>
+    tree-&gt;close("Superjail");
+</p>
+<p>    // Set up a timer to keep time in tree updated
+    Fl::add_timeout(0.2, Timer_CB, (void<em>)tree);
+  }<br/>
+  win-&gt;end();<br/>
+  win-&gt;resizable(win);<br/>
+  win-&gt;show(argc, argv);<br/>
+  return(Fl::run());<br/>
+}<br/>
+#else<br/>
+#include &lt;FL/Fl.H&gt;<br/>
+#include &lt;FL/fl_message.H&gt;<br/>
+int main(int, char</em>*) {<br/>
+  fl_alert("This demo is dependent on an ABI feature.\n"
+</p><p>           "FLTK_ABI_VERSION must be set to 10303 (or higher) in Enumerations.H");
+  return 1;<br/>
+}<br/>
+#endif
+</p>
+<p>//<br/>
+// End of "$Id: tree-custom-draw-items.cxx 10071 2014-01-20 21:23:24Z greg.ercolano $".
+//</p>
+
+</body>
+</html>

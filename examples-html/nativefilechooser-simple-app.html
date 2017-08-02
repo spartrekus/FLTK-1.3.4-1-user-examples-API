@@ -1,0 +1,175 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+<meta name="generator" content="HTML::TextToHTML v2.51"/>
+</head>
+<body>
+<p>//<br/>
+// "$Id: nativefilechooser-simple-app.cxx 10005 2013-10-22 09:09:53Z manolo $"
+//<br/>
+//      An example of how to use Fl_Native_File_Chooser to open &amp; save files.
+//<br/>
+// Copyright 2010 Greg Ercolano.<br/>
+// Copyright 1998-2010 by Bill Spitzak and others.
+//<br/>
+// This library is free software. Distribution and use rights are outlined in
+// the file "COPYING" which should have been included with this file.  If this
+// file is missing or damaged, see the license at:
+//<br/>
+//     <a href="http://www.fltk.org/COPYING.php">http://www.fltk.org/COPYING.php</a><br/>
+//<br/>
+// Please report all bugs and problems on the following page:
+//<br/>
+//     <a href="http://www.fltk.org/str.php">http://www.fltk.org/str.php</a><br/>
+//
+</p><pre>
+#include &lt;stdio.h&gt;      // printf
+#include &lt;stdlib.h&gt;     // exit,malloc
+#include &lt;string.h&gt;     // strerror
+#include &lt;errno.h&gt;      // errno
+</pre>
+<p>#include &lt;FL/Fl.H&gt;<br/>
+#include &lt;FL/Fl_Window.H&gt;<br/>
+#include &lt;FL/Fl_Menu_Bar.H&gt;<br/>
+#include &lt;FL/Fl_Native_File_Chooser.H&gt;<br/>
+#include &lt;FL/Fl_Box.H&gt;<br/>
+#include &lt;FL/fl_ask.H&gt;
+</p>
+<p>class Application : public Fl_Window {<br/>
+  Fl_Native_File_Chooser *fc;<br/>
+  // Does file exist?<br/>
+  int exist(const char *filename) {<br/>
+    FILE *fp = fl_fopen(filename, "r");
+    if (fp) { fclose(fp); return(1); }<br/>
+    else    { return(0); }<br/>
+  }<br/>
+  // 'Open' the file<br/>
+  void open(const char *filename) {<br/>
+    printf("Open '%s'\n", filename);<br/>
+  }<br/>
+  // 'Save' the file<br/>
+  //    Create the file if it doesn't exist
+  //    and save something in it.<br/>
+  //<br/>
+  void save(const char *filename) {<br/>
+    printf("Saving '%s'\n", filename);<br/>
+    if ( !exist(filename) ) {
+</p><pre>
+      FILE *fp = fl_fopen(filename, "w");                               // create file if it doesn't exist
+      if ( fp ) {
+        // A real app would do something useful here.
+        fprintf(fp, "Hello world.\n");
+        fclose(fp);
+      } else {
+        fl_message("Error: %s: %s", filename, strerror(errno));
+      }
+    } else {
+      // A real app would do something useful here.
+</pre>
+<p>    }<br/>
+  }<br/>
+  // Handle an 'Open' request from the menu
+  static void open_cb(Fl_Widget *w, void *v) {
+    Application <em>app = (Application</em>)v;
+    app-&gt;fc-&gt;title("Open");<br/>
+    app-&gt;fc-&gt;type(Fl_Native_File_Chooser::BROWSE_FILE);         // only picks files that exist
+    switch ( app-&gt;fc-&gt;show() ) {
+</p><pre>
+      case -1: break;   // Error
+      case  1: break;   // Cancel
+      default:          // Choice
+        app-&gt;fc-&gt;preset_file(app-&gt;fc-&gt;filename());
+        app-&gt;open(app-&gt;fc-&gt;filename());
+        break;
+</pre>
+<p>    }<br/>
+  }<br/>
+  // Handle a 'Save as' request from the menu
+  static void saveas_cb(Fl_Widget *w, void *v) {
+    Application <em>app = (Application</em>)v;
+    app-&gt;fc-&gt;title("Save As");<br/>
+    app-&gt;fc-&gt;type(Fl_Native_File_Chooser::BROWSE_SAVE_FILE);    // need this if file doesn't exist yet
+    switch ( app-&gt;fc-&gt;show() ) {
+</p><pre>
+      case -1: break;   // Error
+      case  1: break;   // Cancel
+      default:          // Choice
+        app-&gt;fc-&gt;preset_file(app-&gt;fc-&gt;filename());
+        app-&gt;save(app-&gt;fc-&gt;filename());
+        break;
+</pre>
+<p>    }<br/>
+  }<br/>
+  // Handle a 'Save' request from the menu
+  static void save_cb(Fl_Widget *w, void *v) {
+    Application <em>app = (Application</em>)v;
+    if ( strlen(app-&gt;fc-&gt;filename()) == 0 ) {
+      saveas_cb(w,v);<br/>
+    } else {<br/>
+      app-&gt;save(app-&gt;fc-&gt;filename());<br/>
+    }<br/>
+  }<br/>
+  static void quit_cb(Fl_Widget *w, void <em>v) {
+    exit(0);<br/>
+  }<br/>
+  // Return an 'untitled' default pathname
+  const char</em> untitled_default() {<br/>
+    static char *filename = 0;<br/>
+    if ( !filename ) {
+</p><pre>
+      const char <em>home =
+        getenv("HOME") ? getenv("HOME") :                // unix
+        getenv("HOME_PATH") ? getenv("HOME_PATH") :      // windows
+        ".";                                             // other
+      filename = (char</em>)malloc(strlen(home)+20);
+      sprintf(filename, "%s/untitled.txt", home);
+</pre>
+<p>    }<br/>
+    return(filename);<br/>
+  }<br/>
+public:<br/>
+<strong>// CTOR</strong><br/>
+  Application() : Fl_Window(400,200,"Native File Chooser Example") {
+    Fl_Menu_Bar <em>menu = new Fl_Menu_Bar(0,0,400,25);
+    menu-&gt;add("&amp;File/&amp;Open",  FL_COMMAND+'o', open_cb, (void</em>)this);
+    menu-&gt;add("&amp;File/&amp;Save",  FL_COMMAND+'s', save_cb, (void<em>)this);
+    menu-&gt;add("&amp;File/&amp;Save As", 0,  saveas_cb, (void</em>)this);
+    menu-&gt;add("&amp;File/&amp;Quit",  FL_COMMAND+'q', quit_cb);
+    // Describe the demo..<br/>
+    Fl_Box *box = new Fl_Box(20,25+20,w()-40,h()-40-25);
+    box-&gt;color(45); <br/>
+    box-&gt;box(FL_FLAT_BOX);<br/>
+    box-&gt;align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE|FL_ALIGN_WRAP);
+    box-&gt;label("This demo shows an example of implementing "
+</p><pre>
+               "common 'File' menu operations like:\n"
+               "    File/Open, File/Save, File/Save As\n"
+               "..using the Fl_Native_File_Chooser widget.\n\n"
+               "Note 'Save' and 'Save As' really <em>does</em> create files! "
+               "This is to show how behavior differs when "
+               "files exist vs. do not.");
+</pre>
+<p>    box-&gt;labelsize(12);<br/>
+    // Initialize the file chooser<br/>
+    fc = new Fl_Native_File_Chooser();<br/>
+    fc-&gt;filter("Text\t*.txt\n");<br/>
+    fc-&gt;preset_file(untitled_default());
+    end();<br/>
+  }<br/>
+};
+</p>
+<p>int main(int argc, char *argv[]) {<br/>
+  Fl::scheme("gtk+");<br/>
+  Application *app = new Application();
+  app-&gt;show(argc,argv);<br/>
+  return(Fl::run());<br/>
+}
+</p>
+<p>//<br/>
+// End of "$Id: nativefilechooser-simple-app.cxx 10005 2013-10-22 09:09:53Z manolo $".
+//</p>
+
+</body>
+</html>

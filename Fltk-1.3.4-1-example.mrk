@@ -1,0 +1,13 @@
+
+/* this is Unimark markup language */
+
+=================
+= Compilation 
+=================
+The examples can be compiled with a standard CC compiler.
+
+An example of code is indicated herewith:
+~ gcc -L/usr/local/lib -lfltk -lXext -lX11 -lm  01-hello.c  -o 01-hello    
+
+
+

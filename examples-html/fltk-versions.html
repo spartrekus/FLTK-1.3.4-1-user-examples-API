@@ -1,0 +1,100 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+<meta name="generator" content="HTML::TextToHTML v2.51"/>
+</head>
+<body>
+<p>//<br/>
+// "$Id: fltk-versions.cxx 10785 2015-07-12 17:45:13Z AlbrechtS $"
+//<br/>
+// Library version test program for the Fast Light Tool Kit (FLTK).
+//<br/>
+// Copyright 1998-2015 by Bill Spitzak and others.
+//<br/>
+// This library is free software. Distribution and use rights are outlined in
+// the file "COPYING" which should have been included with this file.  If this
+// file is missing or damaged, see the license at:
+//<br/>
+//     <a href="http://www.fltk.org/COPYING.php">http://www.fltk.org/COPYING.php</a><br/>
+//<br/>
+// Please report all bugs and problems on the following page:
+//<br/>
+//     <a href="http://www.fltk.org/str.php">http://www.fltk.org/str.php</a><br/>
+//
+</p>
+<p>#include &lt;FL/Fl.H&gt;<br/>
+#include &lt;FL/Fl_Window.H&gt;<br/>
+#include &lt;FL/Fl_Box.H&gt;<br/>
+#include &lt;FL/fl_ask.H&gt;
+</p>
+<p>static char version[8][80] = { "","","","","","","","" };
+</p>
+<p>int main(int argc, char **argv) {
+</p>
+<p>  int versions = 0;
+</p>
+<pre>
+  sprintf(version[versions++],"FL_VERSION        = %6.4f",FL_VERSION);
+  sprintf(version[versions++],"Fl::version()     = %6.4f  %s",Fl::version(),
+</pre>
+<p>    (FL_VERSION == Fl::version()) ? "" : "***");
+</p>
+<p>#ifdef FL_API_VERSION<br/>
+  sprintf(version[versions++],"FL_API_VERSION    = %6d",FL_API_VERSION);
+  sprintf(version[versions++],"Fl::api_version() = %6d  %s",Fl::api_version(),
+    (FL_API_VERSION == Fl::api_version()) ? "" : "***");
+#endif
+</p>
+<p>#ifdef FL_ABI_VERSION<br/>
+  sprintf(version[versions++],"FL_ABI_VERSION    = %6d",FL_ABI_VERSION);
+  sprintf(version[versions++],"Fl::abi_version() = %6d  %s",Fl::abi_version(),
+    (FL_ABI_VERSION == Fl::abi_version()) ? "" : "***");
+#endif
+</p>
+<p>#ifdef FLTK_ABI_VERSION<br/>
+  sprintf(version[versions++],"FLTK_ABI_VERSION  = %6d",FLTK_ABI_VERSION);
+  sprintf(version[versions++],"NOTE: FLTK_ABI_VERSION is deprecated.\n"
+</p><p>                              "Please use FL_ABI_VERSION instead !");
+#endif
+</p>
+<p>  for (int i=0; i&lt;versions; i++) {<br/>
+    printf("%s\n",version[i]);<br/>
+  }
+</p>
+<p>#ifdef FL_ABI_VERSION<br/>
+  if (FL_ABI_VERSION != Fl::abi_version()) {
+    printf("*** FLTK ABI version mismatch: headers = %d, lib = %d ***\n",
+      FL_ABI_VERSION, Fl::abi_version());
+    fflush(stdout);<br/>
+    fl_message("*** FLTK ABI version mismatch: headers = %d, lib = %d ***",
+      FL_ABI_VERSION, Fl::abi_version());
+    // exit(1);<br/>
+  }<br/>
+#endif
+</p>
+<p>  Fl_Window *window = new Fl_Window(670,300);
+</p>
+<p>  Fl_Box <em>box[8];<br/>
+  for (int i=0; i&lt;4; i++) {<br/>
+    box[2</em>i]   = new Fl_Box( 10,40+40<em>i,320,30,version[2</em>i]);
+    box[2<em>i+1] = new Fl_Box(340,40+40</em>i,320,30,version[2*i+1]);
+  }
+</p>
+<p>  for (int i=0; i&lt;8; i++) {<br/>
+    box[i]-&gt;labelfont(FL_COURIER);<br/>
+    box[i]-&gt;align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+  }
+</p>
+<p>  window-&gt;end();<br/>
+  window-&gt;show(argc, argv);<br/>
+  return Fl::run();<br/>
+}
+</p>
+<p>//<br/>
+// End of "$Id: fltk-versions.cxx 10785 2015-07-12 17:45:13Z AlbrechtS $".
+//</p>
+
+</body>
+</html>

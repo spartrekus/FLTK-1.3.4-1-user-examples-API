@@ -1,0 +1,142 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+<meta name="generator" content="HTML::TextToHTML v2.51"/>
+</head>
+<body>
+<p>//<br/>
+// "$Id: table-simple.cxx 9086 2011-09-29 21:10:59Z greg.ercolano $"
+//<br/>
+//    Simple example of using Fl_Table - Greg Ercolano 11/29/2010
+//<br/>
+//    Demonstrates the simplest use of Fl_Table possible.
+//    Display a 10x10 array of integers with row/col headers.
+//    No interaction; simple display of data only.
+//    See other examples for more complex interactions with the table.
+//<br/>
+// Copyright 2010 Greg Ercolano.<br/>
+// Copyright 1998-2010 by Bill Spitzak and others.
+//<br/>
+// This library is free software. Distribution and use rights are outlined in
+// the file "COPYING" which should have been included with this file.  If this
+// file is missing or damaged, see the license at:
+//<br/>
+//     <a href="http://www.fltk.org/COPYING.php">http://www.fltk.org/COPYING.php</a><br/>
+//<br/>
+// Please report all bugs and problems on the following page:
+//<br/>
+//     <a href="http://www.fltk.org/str.php">http://www.fltk.org/str.php</a><br/>
+// <br/>
+#include &lt;FL/Fl.H&gt;<br/>
+#include &lt;FL/Fl_Double_Window.H&gt;<br/>
+#include &lt;FL/Fl_Table.H&gt;<br/>
+#include &lt;FL/fl_draw.H&gt;
+</p>
+<p>#define MAX_ROWS 30<br/>
+#define MAX_COLS 26             // A-Z
+</p>
+<p>// Derive a class from Fl_Table<br/>
+class MyTable : public Fl_Table {
+</p>
+<p>  int data[MAX_ROWS][MAX_COLS];         // data array for cells
+</p>
+<p>  // Draw the row/col headings<br/>
+  //    Make this a dark thin upbox with the text inside.
+  //<br/>
+  void DrawHeader(const char *s, int X, int Y, int W, int H) {
+    fl_push_clip(X,Y,W,H);
+</p><pre>
+      fl_draw_box(FL_THIN_UP_BOX, X,Y,W,H, row_header_color());
+      fl_color(FL_BLACK);
+      fl_draw(s, X,Y,W,H, FL_ALIGN_CENTER);
+</pre>
+<p>    fl_pop_clip();<br/>
+  } <br/>
+  // Draw the cell data<br/>
+  //    Dark gray text on white background with subtle border
+  //<br/>
+  void DrawData(const char *s, int X, int Y, int W, int H) {
+    fl_push_clip(X,Y,W,H);
+</p><pre>
+      // Draw cell bg
+      fl_color(FL_WHITE); fl_rectf(X,Y,W,H);
+      // Draw cell data
+      fl_color(FL_GRAY0); fl_draw(s, X,Y,W,H, FL_ALIGN_CENTER);
+      // Draw box border
+      fl_color(color()); fl_rect(X,Y,W,H);
+</pre>
+<p>    fl_pop_clip();<br/>
+  } <br/>
+  // Handle drawing table's cells
+</p><pre>
+  //     Fl_Table calls this function to draw each visible cell in the table.
+  //     It's up to us to use FLTK's drawing functions to draw the cells the way we want.
+</pre>
+<p>  //<br/>
+  void draw_cell(TableContext context, int ROW=0, int COL=0, int X=0, int Y=0, int W=0, int H=0) {
+    static char s[40];<br/>
+    switch ( context ) {
+</p><pre>
+      case CONTEXT_STARTPAGE:                   // before page is drawn..
+        fl_font(FL_HELVETICA, 16);              // set the font for our drawing operations
+        return; 
+      case CONTEXT_COL_HEADER:                  // Draw column headers
+        sprintf(s,"%c",'A'+COL);                // "A", "B", "C", etc.
+        DrawHeader(s,X,Y,W,H);
+        return; 
+      case CONTEXT_ROW_HEADER:                  // Draw row headers
+        sprintf(s,"%03d:",ROW);                 // "001:", "002:", etc
+        DrawHeader(s,X,Y,W,H);
+        return; 
+      case CONTEXT_CELL:                        // Draw data in cells
+        sprintf(s,"%d",data[ROW][COL]);
+        DrawData(s,X,Y,W,H);
+        return;
+      default:
+        return;
+</pre>
+<p>    }<br/>
+  }<br/>
+public:<br/>
+  // Constructor<br/>
+  //     Make our data array, and initialize the table options.
+  //<br/>
+  MyTable(int X, int Y, int W, int H, const char <em>L=0) : Fl_Table(X,Y,W,H,L) {
+    // Fill data array<br/>
+    for ( int r=0; r&lt;MAX_ROWS; r++ )
+</p><pre>
+      for ( int c=0; c&lt;MAX_COLS; c++ )
+        data[r][c] = 1000+(r</em>1000)+c;
+    // Rows
+    rows(MAX_ROWS);             // how many rows
+    row_header(1);              // enable row headers (along left)
+    row_height_all(20);         // default height of rows
+    row_resize(0);              // disable row resizing
+    // Cols
+    cols(MAX_COLS);             // how many columns
+    col_header(1);              // enable column headers (along top)
+    col_width_all(80);          // default width of columns
+    col_resize(1);              // enable column resizing
+    end();                      // end the Fl_Table group
+</pre>
+<p>  }<br/>
+  ~MyTable() { }<br/>
+};
+</p>
+<p>int main(int argc, char **argv) {<br/>
+  Fl_Double_Window win(900, 400, "Simple Table");
+  MyTable table(10,10,880,380);<br/>
+  win.end();<br/>
+  win.resizable(table);<br/>
+  win.show(argc,argv);<br/>
+  return(Fl::run());<br/>
+}
+</p>
+<p>//<br/>
+// End of "$Id: table-simple.cxx 9086 2011-09-29 21:10:59Z greg.ercolano $".
+//</p>
+
+</body>
+</html>

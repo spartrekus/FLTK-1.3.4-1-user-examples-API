@@ -1,0 +1,112 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+<meta name="generator" content="HTML::TextToHTML v2.51"/>
+</head>
+<body>
+<p>//<br/>
+// "$Id: tree-simple.cxx 10015 2013-11-06 20:12:08Z greg.ercolano $"
+//<br/>
+//      Simple Fl_Tree widget example. - erco 06/05/2010
+//<br/>
+// Copyright 2010 Greg Ercolano.<br/>
+// Copyright 1998-2010 by Bill Spitzak and others.
+//<br/>
+// This library is free software. Distribution and use rights are outlined in
+// the file "COPYING" which should have been included with this file.  If this
+// file is missing or damaged, see the license at:
+//<br/>
+//     <a href="http://www.fltk.org/COPYING.php">http://www.fltk.org/COPYING.php</a><br/>
+//<br/>
+// Please report all bugs and problems on the following page:
+//<br/>
+//     <a href="http://www.fltk.org/str.php">http://www.fltk.org/str.php</a><br/>
+//<br/>
+#include &lt;stdio.h&gt;<br/>
+#include &lt;FL/Fl.H&gt;<br/>
+#include &lt;FL/Fl_Double_Window.H&gt;<br/>
+#include &lt;FL/Fl_Tree.H&gt;
+</p>
+<p>// Tree's callback<br/>
+//    Invoked whenever an item's state changes.
+//<br/>
+void TreeCallback(Fl_Widget *w, void *data) {
+  Fl_Tree <em>tree = (Fl_Tree</em>)w;<br/>
+  Fl_Tree_Item <em>item = (Fl_Tree_Item</em>)tree-&gt;callback_item();
+  if ( ! item ) return;<br/>
+  switch ( tree-&gt;callback_reason() ) {<br/>
+    case FL_TREE_REASON_SELECTED: {
+</p><pre>
+      char pathname[256];
+      tree-&gt;item_pathname(pathname, sizeof(pathname), item);
+      fprintf(stderr, "TreeCallback: Item selected='%s', Full pathname='%s'\n", item-&gt;label(), pathname);
+      break;
+</pre>
+<p>    }<br/>
+    case FL_TREE_REASON_DESELECTED:
+</p><pre>
+      // fprintf(stderr, "TreeCallback: Item '%s' deselected\n", item-&gt;label());
+      break;
+    case FL_TREE_REASON_OPENED:
+      // fprintf(stderr, "TreeCallback: Item '%s' opened\n", item-&gt;label());
+      break;
+    case FL_TREE_REASON_CLOSED:
+      // fprintf(stderr, "TreeCallback: Item '%s' closed\n", item-&gt;label());
+      break;
+</pre>
+<p>#if FLTK_ABI_VERSION &gt;= 10301
+</p><p>    // To enable this callback, use tree-&gt;item_reselect_mode(FL_TREE_SELECTABLE_ALWAYS);
+    case FL_TREE_REASON_RESELECTED:
+</p><pre>
+      // fprintf(stderr, "TreeCallback: Item '%s' reselected\n", item-&gt;label());
+      break;
+</pre>
+<p>#endif
+</p><dl>
+  <dt>default</dt>
+<dd>      break;
+  }
+}
+</dd></dl>
+<p>int main(int argc, char *argv[]) {<br/>
+  Fl::scheme("gtk+");<br/>
+  Fl_Double_Window *win = new Fl_Double_Window(250, 400, "Simple Tree");
+  win-&gt;begin();<br/>
+  {<br/>
+    // Create the tree<br/>
+    Fl_Tree *tree = new Fl_Tree(10, 10, win-&gt;w()-20, win-&gt;h()-20);
+</p><pre>
+    tree-&gt;showroot(0);                          // don't show root of tree
+    tree-&gt;callback(TreeCallback);               // setup a callback for the tree
+</pre>
+<p>    // Add some items<br/>
+    tree-&gt;add("Flintstones/Fred");<br/>
+    tree-&gt;add("Flintstones/Wilma");<br/>
+    tree-&gt;add("Flintstones/Pebbles");<br/>
+    tree-&gt;add("Simpsons/Homer");<br/>
+    tree-&gt;add("Simpsons/Marge");<br/>
+    tree-&gt;add("Simpsons/Bart");<br/>
+    tree-&gt;add("Simpsons/Lisa");<br/>
+    tree-&gt;add("Pathnames/\\/bin");              // front slashes
+    tree-&gt;add("Pathnames/\\/usr\\/sbin");
+    tree-&gt;add("Pathnames/C:\\\\Program Files"); // backslashes
+    tree-&gt;add("Pathnames/C:\\\\Documents and Settings");
+</p>
+<p>    // Start with some items closed<br/>
+    tree-&gt;close("Simpsons");<br/>
+    tree-&gt;close("Pathnames");<br/>
+  }<br/>
+  win-&gt;end();<br/>
+  win-&gt;resizable(win);<br/>
+  win-&gt;show(argc, argv);<br/>
+  return(Fl::run());<br/>
+}
+</p>
+<p>//<br/>
+// End of "$Id: tree-simple.cxx 10015 2013-11-06 20:12:08Z greg.ercolano $".
+//</p>
+
+</body>
+</html>

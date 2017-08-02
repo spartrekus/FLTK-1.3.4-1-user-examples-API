@@ -1,0 +1,206 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+<meta name="generator" content="HTML::TextToHTML v2.51"/>
+</head>
+<body>
+<p>//<br/>
+// "$Id: table-with-keynav.cxx 9848 2013-03-25 23:20:29Z greg.ercolano $"
+//<br/>
+//    Example of Fl_Table with keyboard selection navigation - Greg Ercolano 04/14/2012
+//<br/>
+//    Display a 10x10 multiplication table, and allow the user to
+//    make cell or row selections (with mouse or keyboard navigation)
+//    to select areas of the table, and show the sum of the cell's values.
+//<br/>
+//    Started with the "testkeyboardnav.cxx" example from the original
+//    Fl_Table project, using Jean-Marc Lienher's additions for keyboard nav.
+//<br/>
+// Copyright 2003, 2012 Greg Ercolano.<br/>
+// Copyright 2004 Jean-Marc Lienher<br/>
+// Copyright 1998-2010 by Bill Spitzak and others.
+//<br/>
+// This library is free software. Distribution and use rights are outlined in
+// the file "COPYING" which should have been included with this file.  If this
+// file is missing or damaged, see the license at:
+//<br/>
+//     <a href="http://www.fltk.org/COPYING.php">http://www.fltk.org/COPYING.php</a><br/>
+//<br/>
+// Please report all bugs and problems on the following page:
+//<br/>
+//     <a href="http://www.fltk.org/str.php">http://www.fltk.org/str.php</a><br/>
+//<br/>
+#include &lt;FL/Fl.H&gt;<br/>
+#include &lt;FL/fl_draw.H&gt;<br/>
+#include &lt;FL/Fl_Double_Window.H&gt;<br/>
+#include &lt;FL/Fl_Toggle_Button.H&gt;<br/>
+#include &lt;FL/Fl_Output.H&gt;<br/>
+#include &lt;FL/Fl_Table_Row.H&gt;<br/>
+#include &lt;FL/names.h&gt;<br/>
+#include &lt;stdio.h&gt;<br/>
+#include &lt;stdlib.h&gt;
+</p>
+<p><strong>// GLOBALS</strong><br/>
+class MyTable;
+</p><pre>
+Fl_Toggle_Button *G_rowselect = 0;              // toggle to enable row selection
+MyTable          *G_table = 0;                  // table widget
+Fl_Output        *G_sum = 0;                    // displays sum of user's selection
+</pre>
+<p>class MyTable : public Fl_Table_Row {<br/>
+protected:
+</p><p>    // Handle drawing all cells in table
+    void draw_cell(TableContext context, int R=0,int C=0, int X=0,int Y=0,int W=0,int H=0) {
+</p><pre>
+        static char s[30]; 
+        switch ( context ) {
+            case CONTEXT_COL_HEADER:
+            case CONTEXT_ROW_HEADER:
+                fl_font(FL_HELVETICA | FL_BOLD, 14);
+                fl_push_clip(X, Y, W, H);
+                {
+                    Fl_Color c = (context==CONTEXT_COL_HEADER) ? col_header_color() : row_header_color();
+                    fl_draw_box(FL_THIN_UP_BOX, X, Y, W, H, c);
+                    fl_color(FL_BLACK);
+                    // Draw text for headers
+                    sprintf(s, "%d", (context == CONTEXT_COL_HEADER) ? C : R);
+                    fl_draw(s, X, Y, W, H, FL_ALIGN_CENTER);
+                }
+                fl_pop_clip();
+                return;
+            case CONTEXT_CELL: {
+                // Keyboard nav and mouse selection highlighting
+                int selected = G_rowselect-&gt;value() ? row_selected(R) : is_selected(R,C);
+                fl_draw_box(FL_THIN_UP_BOX, X, Y, W, H, selected ? FL_YELLOW : FL_WHITE);
+                // Draw text for the cell
+                fl_push_clip(X+3, Y+3, W-6, H-6);
+                {
+                    fl_font(FL_HELVETICA, 14);
+                    fl_color(FL_BLACK); 
+                    sprintf(s, "%d", R*C);              // factor row + col for data cells
+                    fl_draw(s, X+3, Y+3, W-6, H-6, FL_ALIGN_RIGHT);
+                }
+                fl_pop_clip();
+                return;
+            }
+            default:
+                return;
+        }
+</pre>
+<p>    }<br/>
+public:
+</p><p><strong>// CTOR</strong><br/>
+    MyTable(int x, int y, int w, int h, const char <em>l=0) : Fl_Table_Row(x,y,w,h,l) {
+</p><pre>
+        // Row init
+        row_header(1);
+        row_header_width(70);
+        row_resize(1);
+        rows(11);
+        row_height_all(20);
+        // Col init
+        col_header(1);
+        col_header_height(20);
+        col_resize(1);
+        cols(11);
+        col_width_all(70);
+        end();                  // Fl_Table derives from Fl_Group, so end() it
+</pre>
+<p>    }<br/>
+    ~MyTable() { }<br/>
+    // Update the displayed sum value<br/>
+    int GetSelectionSum() {
+</p><pre>
+        int sum = -1;
+        for ( int R=0; R&lt;rows(); R++ ) {
+            for ( int C=0; C&lt;cols(); C++ ) {
+                if ( G_rowselect-&gt;value() ? row_selected(R) : is_selected(R,C) ) {
+                    if ( sum == -1 ) sum = 0;
+                    sum += R</em>C;
+                }
+            }
+        }
+        return(sum);
+</pre>
+<p>    }<br/>
+    // Update the "Selection sum:" display
+    void UpdateSum() {
+</p><pre>
+        static char s[80];
+        int sum = GetSelectionSum();
+        if ( sum == -1 ) { sprintf(s, "(nothing selected)"); G_sum-&gt;color(48); }
+        else             { sprintf(s, "%d", sum); G_sum-&gt;color(FL_WHITE); }
+        // Update only if different (lets one copy/paste from sum)
+        if ( strcmp(s,G_sum-&gt;value()))
+            { G_sum-&gt;value(s); G_sum-&gt;redraw(); }
+</pre>
+<p>    }<br/>
+    // Keyboard and mouse events<br/>
+    int handle(int e) {
+</p><pre>
+        int ret = Fl_Table_Row::handle(e);
+        if ( e == FL_KEYBOARD &amp;&amp; Fl::event_key() == FL_Escape ) exit(0);
+        switch (e) {
+            case FL_PUSH:
+            case FL_RELEASE:
+            case FL_KEYUP:
+            case FL_KEYDOWN:
+            case FL_DRAG: {
+                //ret = 1;              // <em>don't</em> indicate we 'handled' these, just update ('handling' prevents e.g. tab nav)
+                UpdateSum();
+                redraw();
+                break;
+            }
+            case FL_FOCUS:              // tells FLTK we're interested in keyboard events
+            case FL_UNFOCUS:
+                ret = 1;
+                break;
+        }
+        return(ret);
+</pre>
+<p>    }<br/>
+};
+</p>
+<p>// User changed the 'row select' toggle button
+void RowSelect_CB(Fl_Widget <em>w, void</em>) {
+</p><p>    w-&gt;window()-&gt;redraw();              // redraw with changes applied
+    G_table-&gt;UpdateSum();<br/>
+}<br/>
+int main() {
+</p><p>    Fl::option(Fl::OPTION_ARROW_FOCUS, 0);              // disable arrow focus nav (we want arrows to control cells)
+    Fl_Double_Window win(862, 312, "table-with-keynav");
+    win.begin();
+</p><pre>
+        // Create table
+        G_table = new MyTable(10, 30, win.w()-20, win.h()-70, "Times Table");
+        G_table-&gt;tooltip("Use mouse or Shift + Arrow Keys to make selections.\n"
+                         "Sum of selected values is shown.");
+        // Row select toggle button
+        G_rowselect = new Fl_Toggle_Button(140,10,12,12,"Row selection");
+        G_rowselect-&gt;align(FL_ALIGN_LEFT);
+        G_rowselect-&gt;value(0);
+        G_rowselect-&gt;selection_color(FL_YELLOW);
+        G_rowselect-&gt;callback(RowSelect_CB);
+        G_rowselect-&gt;tooltip("Click to toggle row vs. row/col selection");
+        // Selection sum display
+        win.end();
+        win.begin();
+        G_sum = new Fl_Output(140,G_table-&gt;y()+G_table-&gt;h()+10,160,25,"Selection Sum:");
+        G_sum-&gt;value("(nothing selected)");
+        G_sum-&gt;color(48);
+        G_sum-&gt;tooltip("This field shows the sum of the selected cells in the table");
+</pre>
+<p>    win.end();<br/>
+    win.resizable(G_table);<br/>
+    win.show(); <br/>
+    return Fl::run();<br/>
+}
+</p>
+<p>//<br/>
+// End of "$Id: table-with-keynav.cxx 9848 2013-03-25 23:20:29Z greg.ercolano $".
+//</p>
+
+</body>
+</html>

@@ -1,0 +1,563 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+<meta name="generator" content="HTML::TextToHTML v2.51"/>
+</head>
+<body>
+<p>/**
+</p>
+<p> \page  opengl Using OpenGL
+</p>
+<p>This chapter discusses using FLTK for your OpenGL applications.
+</p>
+<p>\section opengl_using Using OpenGL in FLTK
+</p>
+<p>The easiest way to make an OpenGL display is to subclass
+Fl_Gl_Window.<br/>
+Your subclass must implement a \p draw() method which uses
+OpenGL calls to draw the display. Your main program should call
+\p redraw() when the display needs to change, and
+(somewhat later) FLTK will call \p draw().
+</p>
+<p>With a bit of care you can also use OpenGL to draw into
+normal FLTK windows. This allows you to use Gouraud shading for
+drawing your widgets.  To do this you use the
+\ref opengl_gl_start "gl_start()" and<br/>
+\ref opengl_gl_finish "gl_finish()"<br/>
+functions around your OpenGL code.
+</p>
+<p>You must include FLTK's \p &lt;FL/gl.h&gt; header
+file. It will include the file \p &lt;GL/gl.h&gt;, define
+some extra drawing functions provided by FLTK, and include the
+\p &lt;windows.h&gt; header file needed by WIN32
+applications.
+</p>
+<p>Some simple coding rules (see \ref osissues_retina) allow to write cross-platform code that will draw high resolution
+OpenGL graphics if run on 'retina' displays with Mac OS X.
+</p>
+<p>\section opengl_subclass Making a Subclass of Fl_Gl_Window
+</p>
+<p>To make a subclass of Fl_Gl_Window, you must provide:
+</p>
+<p>\li A class definition.<br/>
+\li A \p draw() method.<br/>
+\li A \p handle() method if you need to receive input from the user.
+</p>
+<p>If your subclass provides static controls in the window, they
+must be redrawn whenever the \p FL_DAMAGE_ALL bit is set
+in the value returned by \p damage(). For double-buffered
+windows you will need to surround the drawing code with the
+following code to make sure that both buffers are redrawn:
+</p>
+<p>\code<br/>
+#ifndef MESA<br/>
+glDrawBuffer(GL_FRONT_AND_BACK);<br/>
+#endif // !MESA<br/>
+... draw stuff here ...<br/>
+#ifndef MESA<br/>
+glDrawBuffer(GL_BACK);<br/>
+#endif // !MESA<br/>
+\endcode
+</p>
+<p>&lt;CENTER&gt;&lt;TABLE WIDTH="80%" BORDER="1" CELLPADDING="5" CELLSPACING="0" BGCOLOR="#cccccc"&gt;
+&lt;TR&gt;
+</p><p>        &lt;TD&gt;&lt;B&gt;Note:&lt;/B&gt;
+</p>
+<pre>
+        If you are using the Mesa graphics library, the call
+        to \p glDrawBuffer() is not required and will slow
+        down drawing considerably. The preprocessor instructions
+        shown above will optimize your code based upon the
+        graphics library used.
+
+        &lt;/TD&gt;
+</pre>
+<p>&lt;/TR&gt;<br/>
+&lt;/TABLE&gt;&lt;/CENTER&gt;
+</p>
+<p>\subsection opengl_defining Defining the Subclass
+</p>
+<p>To define the subclass you just subclass the Fl_Gl_Window class:
+</p>
+<p>\code<br/>
+class MyWindow : public Fl_Gl_Window {<br/>
+  void draw();<br/>
+  int handle(int);
+</p>
+<dl>
+  <dt>public</dt>
+<dd>  MyWindow(int X, int Y, int W, int H, const char *L)
+    : Fl_Gl_Window(X, Y, W, H, L) {}
+};
+\endcode
+</dd></dl>
+<p>The \p draw() and \p handle() methods are
+described below. Like any widget, you can include additional
+private and public data in your class (such as scene graph
+information, etc.)
+</p>
+<p>\subsection opengl_draw The draw() Method
+</p>
+<p>The \p draw() method is where you actually do your OpenGL drawing:
+</p>
+<p>\code<br/>
+void MyWindow::draw() {<br/>
+  if (!valid()) {<br/>
+    ... set up projection, viewport, etc ...
+    ... window size is in w() and h().<br/>
+    ... valid() is turned on by FLTK after draw() returns
+  }<br/>
+  ... draw ...<br/>
+}<br/>
+\endcode
+</p>
+<p>\subsection opengl_handle The handle() Method
+</p>
+<p>The \p handle() method handles mouse and keyboard
+events for the window:
+</p>
+<p>\code<br/>
+int MyWindow::handle(int event) {<br/>
+  switch(event) {<br/>
+  case FL_PUSH:<br/>
+    ... mouse down event ...<br/>
+    ... position in Fl::event_x() and Fl::event_y()
+    return 1;<br/>
+  case FL_DRAG:<br/>
+    ... mouse moved while down event ...
+    return 1;<br/>
+  case FL_RELEASE:   <br/>
+    ... mouse up event ...<br/>
+    return 1;<br/>
+  case FL_FOCUS :<br/>
+  case FL_UNFOCUS :<br/>
+    ... Return 1 if you want keyboard events, 0 otherwise
+    return 1;<br/>
+  case FL_KEYBOARD:<br/>
+    ... keypress, key is in Fl::event_key(), ascii in Fl::event_text()
+    ... Return 1 if you understand/use the keyboard event, 0 otherwise...
+    return 1;<br/>
+  case FL_SHORTCUT:<br/>
+    ... shortcut, key is in Fl::event_key(), ascii in Fl::event_text()
+    ... Return 1 if you understand/use the shortcut event, 0 otherwise...
+    return 1;
+</p><dl>
+  <dt>default</dt>
+<dd>    // pass other events to the base class...
+    return Fl_Gl_Window::handle(event);
+  }
+}
+\endcode
+</dd></dl>
+<p>When \p handle() is called, the OpenGL context is not
+set up! If your display changes, you should call
+\p redraw() and let \p draw() do the work. Don't
+call any OpenGL drawing functions from inside \p handle()!
+</p>
+<p>You can call \e some OpenGL stuff like hit detection and texture
+loading functions by doing: 
+</p>
+<p>\code<br/>
+  case FL_PUSH:<br/>
+    make_current();     // make OpenGL context current
+    if (!valid()) {
+</p>
+<p>      ... set up projection exactly the same as draw ...
+</p>
+<p>      valid(1);         // stop it from doing this next time
+    }<br/>
+    ... ok to call NON-DRAWING OpenGL code here, such as hit
+    detection, loading textures, etc...
+\endcode
+</p>
+<p>Your main program can now create one of your windows by doing
+&lt;tt&gt;new MyWindow(...)&lt;/tt&gt;.
+</p>
+<p>You can also use your new window class in
+\ref fluid "FLUID"<br/>
+by:
+</p>
+<p>-<strong> Putting your class definition in a \p MyWindow.H file.
+-</strong> Creating a Fl_Box widget in FLUID.<br/>
+-# In the widget panel fill in the "class" field with \p MyWindow.
+</p><p>   This will make FLUID produce constructors for your new class.
+-<strong> In the "Extra Code" field put &lt;tt&gt;\</strong>include "MyWindow.H"&lt;/tt&gt;,
+</p><p>   so that the FLUID output file will compile.
+</p>
+<p>You must put &lt;tt&gt;glwindow-&gt;show()&lt;/tt&gt; in your main code
+after calling \p show() on the window containing the
+OpenGL window.
+</p>
+<p>\section opengl_normal Using OpenGL in Normal FLTK Windows
+</p>
+<p>You can put OpenGL code into the \p draw() method, as described in
+\ref subclassing_drawing<br/>
+in the previous chapter, or into the code for a
+\ref common_boxtypes "boxtype"<br/>
+or other places with some care.
+</p>
+<p>Most importantly, before you show \e any windows,
+including those that don't have OpenGL drawing, you &lt;B&gt;must&lt;/B&gt;
+initialize FLTK so that it knows it is going to use OpenGL. You
+may use any of the symbols described for \p Fl_Gl_Window::mode()
+to describe how you intend to use OpenGL:
+</p>
+<p>\code<br/>
+Fl::gl_visual(FL_RGB);<br/>
+\endcode
+</p>
+<p>\anchor opengl_gl_start<br/>
+\anchor opengl_gl_finish<br/>
+You can then put OpenGL drawing code anywhere you can draw
+normally by surrounding it with<br/>
+gl_start() and gl_finish() to set up, and later release, an OpenGL
+context with an orthographic projection so that 0,0 is the
+lower-left corner of the window and each pixel is one unit. The
+current clipping is reproduced with OpenGL \p glScissor()
+commands. These functions also synchronize the OpenGL graphics stream
+with the drawing done by other X, WIN32, or FLTK functions.
+</p>
+<p>\code<br/>
+gl_start();<br/>
+... put your OpenGL code here ...<br/>
+gl_finish();<br/>
+\endcode
+</p>
+<p>The same context is reused each time. If your code changes
+the projection transformation or anything else you should use
+\p glPushMatrix() and \p glPopMatrix() functions to
+put the state back before calling \p gl_finish().
+</p>
+<p>You may want to use &lt;tt&gt;Fl_Window::current()-\&gt;h()&lt;/tt&gt; to
+get the drawable height so that you can flip the Y
+coordinates.
+</p>
+<p>Unfortunately, there are a bunch of limitations you must
+adhere to for maximum portability: 
+</p>
+<p>\li You must choose a default visual with Fl::gl_visual().
+</p>
+<p>\li You cannot pass \p FL_DOUBLE to Fl::gl_visual().
+</p>
+<p>\li You cannot use Fl_Double_Window or Fl_Overlay_Window.
+</p>
+<p>Do \e not call \p gl_start() or<br/>
+\p gl_finish() when drawing into an Fl_Gl_Window !
+</p>
+<p>\section opengl_drawing OpenGL Drawing Functions
+</p>
+<p>FLTK provides some useful OpenGL drawing functions. They can
+be freely mixed with any OpenGL calls, and are defined by
+including \p &lt;FL/gl.h&gt; which you should include
+instead of the OpenGL header \p &lt;GL/gl.h&gt;.
+</p>
+<p>void gl_color(Fl_Color)
+</p>
+<p>\par<br/>
+Sets the current OpenGL color to a FLTK color. &lt;I&gt;For
+color-index modes it will use \p fl_xpixel(c), which is
+only right if this window uses the default colormap!&lt;/I&gt;
+</p>
+<p>void gl_rect(int x, int y, int w, int h) &lt;br&gt;
+void gl_rectf(int x, int y, int w, int h)
+</p>
+<p>\par<br/>
+Outlines or fills a rectangle with the current color. If 
+Fl_Gl_Window::ortho() has been called, then the rectangle will exactly
+fill the pixel rectangle passed.
+</p>
+<p>void gl_font(Fl_Font fontid, int size)
+</p>
+<p>\par<br/>
+Sets the current OpenGL font to the same font you get by calling
+\ref ssect_Fonts "fl_font()".
+</p>
+<p>int gl_height() &lt;br&gt;<br/>
+int gl_descent() &lt;br&gt;<br/>
+float gl_width(const char *s) &lt;br&gt;<br/>
+float gl_width(const char *s, int n) &lt;br&gt;
+float gl_width(uchar c)
+</p>
+<p>\par<br/>
+Returns information about the current OpenGL font.
+</p>
+<p>void gl_draw(const char *s) &lt;br&gt;<br/>
+void gl_draw(const char *s, int n)
+</p>
+<p>\par<br/>
+Draws a nul-terminated string or an array of \p n
+characters in the current OpenGL font at the current raster
+position.
+</p>
+<p>void gl_draw(const char *s, int x, int y) &lt;br&gt;
+void gl_draw(const char *s, int n, int x, int y) &lt;br&gt;
+void gl_draw(const char *s, float x, float y) &lt;br&gt;
+void gl_draw(const char *s, int n, float x, float y)
+</p>
+<p>\par<br/>
+Draws a nul-terminated string or an array of \p n
+characters in the current OpenGL font at the given position.
+</p>
+<p>void gl_draw(const char *s, int x, int y, int w, int h, Fl_Align)
+</p>
+<p>\par<br/>
+Draws a string formatted into a box, with newlines and tabs
+expanded, other control characters changed to ^X, and aligned
+with the edges or center. Exactly the same output as
+\ref ssect_Text "fl_draw()".
+</p>
+<p>\section opengl_speed Speeding up OpenGL
+</p>
+<p>Performance of Fl_Gl_Window may be improved on some types of
+OpenGL implementations, in particular MESA and other software
+emulators, by setting the \p GL_SWAP_TYPE environment
+variable. This variable declares what is in the backbuffer after
+you do a swapbuffers.
+</p>
+<p>\li &lt;tt&gt;setenv GL_SWAP_TYPE COPY&lt;/tt&gt; &lt;br&gt;
+</p><p>    &lt;br&gt;<br/>
+    This indicates that the back buffer is copied to the
+    front buffer, and still contains its old data. This is
+    true of many hardware implementations.  Setting this
+    will speed up emulation of overlays, and widgets that
+    can do partial update can take advantage of this as
+    \p damage() will not be cleared to -1.
+</p>
+<p>\li &lt;tt&gt;setenv GL_SWAP_TYPE NODAMAGE&lt;/tt&gt; &lt;br&gt;
+</p><p>    &lt;br&gt;<br/>
+    This indicates that nothing changes the back buffer
+    except drawing into it.  This is true of MESA and Win32
+    software emulation and perhaps some hardware emulation
+    on systems with lots of memory.
+</p>
+<p>\li All other values for \p GL_SWAP_TYPE, and not
+</p><p>    setting the variable, cause FLTK to assume that the
+    back buffer must be completely redrawn after a swap.
+</p>
+<p>This is easily tested by running the \ref examples_gl_overlay demo
+program and seeing if the display is correct when you drag
+another window over it or if you drag the window off the screen
+and back on. You have to exit and run the program again for it
+to see any changes to the environment variable.
+</p>
+<p>\section opengl_optimizer Using OpenGL Optimizer with FLTK
+</p>
+<p>&lt;A href="<a href="http://www.sgi.com/software/optimizer">http://www.sgi.com/software/optimizer</a>"&gt;OpenGL Optimizer&lt;/A&gt;
+is a scene graph toolkit for OpenGL available from
+Silicon Graphics for IRIX and Microsoft Windows. It allows you
+to view large scenes without writing a lot of OpenGL code.
+</p>
+<p>\par OptimizerWindow Class Definition
+</p>
+<p>\par<br/>
+To use<br/>
+&lt;A href="<a href="http://www.sgi.com/software/optimizer">http://www.sgi.com/software/optimizer</a>"&gt;OpenGL Optimizer&lt;/A&gt;
+with FLTK you'll need to create a<br/>
+subclass of Fl_Gl_Widget that includes several state
+variables:
+</p>
+<p>\code<br/>
+class OptimizerWindow : public Fl_Gl_Window {
+  csContext *context_; // Initialized to 0 and set by draw()...
+  csDrawAction *draw_action_; // Draw action...
+  csGroup *scene_; // Scene to draw...<br/>
+  csCamara *camera_; // Viewport for scene...
+</p>
+<p>  void draw();
+</p>
+<dl>
+  <dt>public</dt>
+<dd>  OptimizerWindow(int X, int Y, int W, int H, const char *L)
+    : Fl_Gl_Window(X, Y, W, H, L) {
+      context_ = (csContext *)0;
+      draw_action_ = (csDrawAction *)0;
+      scene_ = (csGroup *)0;
+      camera_ = (csCamera *)0;
+    }
+<p>  void scene(csGroup *g) { scene_ = g; redraw(); }
+</p>
+<p>  void camera(csCamera *c) {
+    camera_ = c;
+    if (context_) {
+      draw_action_-&gt;setCamera(camera_);
+      camera_-&gt;draw(draw_action_);
+      redraw();
+    }
+  }
+};
+\endcode
+</p>
+</dd></dl>
+<p>\par The camera() Method
+</p>
+<p>\par<br/>
+The \p camera() method sets the camera (projection and
+viewpoint) to use when drawing the scene. The scene is redrawn after
+this call.
+</p>
+<p>\par The draw() Method
+</p>
+<p>\par<br/>
+The \p draw() method performs the needed initialization and does
+the actual drawing:
+</p>
+<p>\code<br/>
+void OptimizerWindow::draw() {<br/>
+  if (!context_) {<br/>
+    // This is the first time we've been asked to draw; create the
+    // Optimizer context for the scene...
+</p>
+<p>#ifdef WIN32
+</p><p>    context_ = new csContext((HDC)fl_getHDC());
+    context_-&gt;ref();<br/>
+    context_-&gt;makeCurrent((HDC)fl_getHDC());
+#else
+</p><p>    context_ = new csContext(fl_display, fl_visual);
+    context_-&gt;ref();<br/>
+    context_-&gt;makeCurrent(fl_display, fl_window);
+#endif // WIN32
+</p>
+<p>    ... perform other context setup as desired ...   
+</p>
+<p>    // Then create the draw action to handle drawing things...
+</p>
+<p>    draw_action_ = new csDrawAction;<br/>
+    if (camera_) {
+</p><pre>
+      draw_action_-&gt;setCamera(camera_);
+      camera_-&gt;draw(draw_action_);
+</pre>
+<p>    }<br/>
+  } else {<br/>
+#ifdef WIN32
+</p><p>    context_-&gt;makeCurrent((HDC)fl_getHDC());
+#else
+</p><p>    context_-&gt;makeCurrent(fl_display, fl_window);
+#endif // WIN32<br/>
+  }
+</p>
+<p>  if (!valid()) {<br/>
+    // Update the viewport for this context...
+    context_-&gt;setViewport(0, 0, w(), h());
+  }
+</p>
+<p>  // Clear the window...<br/>
+  context_-&gt;clear(csContext::COLOR_CLEAR | csContext::DEPTH_CLEAR,
+</p><pre>
+                  0.0f,         // Red
+                  0.0f,         // Green
+                  0.0f,         // Blue
+                  1.0f);        // Alpha
+</pre>
+<p>  // Then draw the scene (if any)...<br/>
+  if (scene_)<br/>
+    draw_action_-&gt;apply(scene_);<br/>
+}<br/>
+\endcode
+</p>
+<p>\par The scene() Method
+</p>
+<p>\par<br/>
+The \p scene() method sets the scene to be drawn.  The scene is
+a collection of 3D objects in a \p csGroup.  The scene is redrawn
+after this call.
+</p>
+<p>\section opengl3 Using OpenGL 3.0 (or higher versions)
+</p>
+<p>The examples subdirectory contains OpenGL3test.cxx, a toy program
+showing how to use OpenGL 3.0 (or higher versions) with FLTK in a cross-platform fashion.
+It contains also OpenGL3-glut-test.cxx which shows how to use FLTK's GLUT compatibility
+and OpenGL 3.
+</p>
+<p>&lt;b&gt;On the MSWindows and Unix/Linux platforms&lt;/b&gt;, FLTK creates contexts implementing 
+the highest OpenGL version supported by the hardware,
+which are also compatible with lower OpenGL versions. Thus, FLTK allows
+source code targeting any version of OpenGL. Access to functions from OpenGL versions above 1.1 requires to load function pointers at runtime on these platforms. FLTK recommends to use the GLEW library to perform this. It is therefore
+necessary to install the GLEW library (see below).  &lt;b&gt;On the Mac OS X platform&lt;/b&gt;, 
+FLTK creates by default contexts implementing OpenGL versions 1 or 2. 
+To access OpenGL 3.0 (or higher versions), use the &lt;tt&gt;FL_OPENGL3&lt;/tt&gt; flag (see below).
+Mac OS 10.7 or above is required; GLEW is possible but not necessary.
+</p>
+<p>\par GLEW installation (Unix/Linux and MSWindows platforms)
+GLEW is available as a package for most Linux distributions and in source form at <a href="http://glew.sourceforge.net/">http://glew.sourceforge.net/</a>.
+For the MSWindows platform, a Visual Studio static library (glew32.lib) can be downloaded from the same web site; a MinGW-style static library (libglew32.a) can be built from source with the make command.
+</p>
+<p>\par  Source-level changes for OpenGL 3:
+\li Put this in all OpenGL-using source files (instead of \<strong>include &lt;FL/gl.h&gt;, 
+and before \</strong>include &lt;FL/glut.h&gt; if you use GLUT):
+\code<br/>
+#if defined(__APPLE__)<br/>
+#  include &lt;OpenGL/gl3.h&gt; // defines OpenGL 3.0+ functions
+#else<br/>
+#  if defined(WIN32)<br/>
+#    define GLEW_STATIC 1<br/>
+#  endif<br/>
+#  include &lt;GL/glew.h&gt;<br/>
+#endif<br/>
+\endcode<br/>
+\li Add the &lt;tt&gt;FL_OPENGL3&lt;/tt&gt; flag when calling Fl_Gl_Window::mode(int a)
+or glutInitDisplayMode().<br/>
+\li Put this in the &lt;tt&gt;handle(int event)&lt;/tt&gt; member function of the first to be created 
+among your Fl_Gl_Window-derived classes:
+\code<br/>
+#ifndef __APPLE__
+</p><p>    static int first = 1;<br/>
+    if (first &amp;&amp; event == FL_SHOW &amp;&amp; shown()) {
+</p><pre>
+      first = 0;
+      make_current();
+      glewInit(); // defines pters to functions of OpenGL V 1.2 and above
+</pre>
+<p>    }<br/>
+#endif<br/>
+\endcode<br/>
+\li Alternatively, if you use GLUT, put
+\code<br/>
+#ifndef __APPLE__<br/>
+  glewInit(); // defines pters to functions of OpenGL V 1.2 and above
+#endif<br/>
+\endcode<br/>
+after the first glutCreateWindow() call.
+</p>
+<p>If GLEW is installed on the Mac OS development platform, it is possible 
+to use the same code for all platforms, with one exception: put
+\code<br/>
+#ifdef __APPLE__<br/>
+glewExperimental = GL_TRUE;<br/>
+#endif<br/>
+\endcode<br/>
+before the glewInit() call.
+</p>
+<p>\par Changes in the build process<br/>
+Link with libGLEW.so (on Unix/Linux), libglew32.a (with MinGW) or glew32.lib 
+(with MS Visual Studio); no change is needed on the Mac OS platform.
+</p>
+<p>\htmlonly<br/>
+&lt;hr&gt;<br/>
+&lt;table summary="navigation bar" width="100%" border="0"&gt;
+&lt;tr&gt;<br/>
+  &lt;td width="45%" align="LEFT"&gt;<br/>
+    &lt;a class="el" href="subclassing.html"&gt;
+    [Prev]<br/>
+    Adding and Extending Widgets<br/>
+    &lt;/a&gt;<br/>
+  &lt;/td&gt;<br/>
+  &lt;td width="10%" align="CENTER"&gt;<br/>
+    &lt;a class="el" href="index.html"&gt;[Index]&lt;/a&gt;
+  &lt;/td&gt;<br/>
+  &lt;td width="45%" align="RIGHT"&gt;<br/>
+    &lt;a class="el" href="fluid.html"&gt;<br/>
+    Programming with FLUID<br/>
+    [Next]<br/>
+    &lt;/a&gt;<br/>
+  &lt;/td&gt;<br/>
+&lt;/tr&gt;<br/>
+&lt;/table&gt;<br/>
+\endhtmlonly
+</p>
+<p>*/</p>
+
+</body>
+</html>

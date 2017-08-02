@@ -1,0 +1,185 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+<meta name="generator" content="HTML::TextToHTML v2.51"/>
+</head>
+<body>
+<p>//<br/>
+// "$Id: table-as-container.cxx 9728 2012-11-20 18:32:59Z greg.ercolano $"
+//<br/>
+//      Show how FLTK widgets can be parented by Fl_Table. -erco 03/30/2003
+//
+</p><pre>
+//      Originally the 'widgettable.cxx' example program that came with 
+//      erco's Fl_Table widget. Added to FLTK in 2010.
+//
+//      This demonstrates how to use Fl_Table as a 'container' for FLTK
+//      widgets; one widget per cell. This isn't optimal for large tables,
+//      where it's better to make one instance of a widget, and move it to
+//      where it's needed. For an example of this, see the example program
+//      "table-spreadsheet.cxx".
+</pre>
+<p>//<br/>
+// Copyright 2010 Greg Ercolano.<br/>
+// Copyright 1998-2010 by Bill Spitzak and others.
+//<br/>
+// This library is free software. Distribution and use rights are outlined in
+// the file "COPYING" which should have been included with this file.  If this
+// file is missing or damaged, see the license at:
+//<br/>
+//     <a href="http://www.fltk.org/COPYING.php">http://www.fltk.org/COPYING.php</a><br/>
+//<br/>
+// Please report all bugs and problems to:
+//<br/>
+//     <a href="http://www.fltk.org/str.php">http://www.fltk.org/str.php</a><br/>
+//
+</p>
+<p>#include &lt;stdio.h&gt;<br/>
+#include &lt;FL/Fl.H&gt;<br/>
+#include &lt;FL/Fl_Double_Window.H&gt;<br/>
+#include &lt;FL/Fl_Light_Button.H&gt;<br/>
+#include &lt;FL/Fl_Input.H&gt;<br/>
+#include &lt;FL/fl_draw.H&gt;<br/>
+#include &lt;FL/Fl_Table.H&gt;
+</p>
+<p>void button_cb(Fl_Widget <em>w, void</em>);
+</p>
+<p>//<br/>
+// Simple demonstration class deriving from Fl_Table
+//<br/>
+class WidgetTable : public Fl_Table {<br/>
+protected:
+</p><pre>
+  void draw_cell(TableContext context,                  // table cell drawing
+                 int R=0, int C=0, int X=0, int Y=0, int W=0, int H=0);
+</pre>
+<dl>
+  <dt>public</dt>
+<dd>  WidgetTable(int x, int y, int w, int h, const char *l=0) : Fl_Table(x,y,w,h,l) {
+    col_header(1);
+    col_resize(1);
+    col_header_height(25);
+    row_header(1);
+    row_resize(1);
+    row_header_width(80);
+    end();
+  }
+  ~WidgetTable() { }
+<p>  void SetSize(int newrows, int newcols) {
+    clear();            // clear any previous widgets, if any
+    rows(newrows);
+    cols(newcols);
+</p>
+</dd></dl>
+<p>    begin();            // start adding widgets to group
+    {
+</p><pre>
+      for ( int r = 0; r&lt;newrows; r++ ) {
+        for ( int c = 0; c&lt;newcols; c++ ) {
+          int X,Y,W,H;
+          find_cell(CONTEXT_TABLE, r, c, X, Y, W, H);
+
+          char s[40];
+          if ( c &amp; 1 ) {
+            // Create the input widgets
+            sprintf(s, "%d.%d", r, c);
+            Fl_Input *in = new Fl_Input(X,Y,W,H);
+            in-&gt;value(s);
+          } else {
+            // Create the light buttons
+            sprintf(s, "%d/%d ", r, c);
+            Fl_Light_Button <em>butt = new Fl_Light_Button(X,Y,W,H,strdup(s));
+            butt-&gt;align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
+            butt-&gt;callback(button_cb, (void</em>)0);
+            butt-&gt;value( ((r+c*2) &amp; 4 ) ? 1 : 0);
+          }
+        }
+      }
+</pre>
+<p>    }<br/>
+    end();<br/>
+  }<br/>
+};
+</p>
+<p>// Handle drawing all cells in table<br/>
+void WidgetTable::draw_cell(TableContext context, 
+</p><p>                          int R, int C, int X, int Y, int W, int H) {
+  switch ( context ) {<br/>
+    case CONTEXT_STARTPAGE:
+</p><pre>
+      fl_font(FL_HELVETICA, 12);                // font used by all headers
+      break;
+</pre>
+<p>    case CONTEXT_RC_RESIZE: {
+</p><pre>
+      int X, Y, W, H;
+      int index = 0;
+      for ( int r = 0; r&lt;rows(); r++ ) {
+        for ( int c = 0; c&lt;cols(); c++ ) {
+          if ( index &gt;= children() ) break;
+          find_cell(CONTEXT_TABLE, r, c, X, Y, W, H);
+          child(index++)-&gt;resize(X,Y,W,H);
+        }
+      }
+      init_sizes();                     // tell group children resized
+      return;
+</pre>
+<p>    }
+</p>
+<p>    case CONTEXT_ROW_HEADER:
+</p><pre>
+      fl_push_clip(X, Y, W, H);
+      {
+        static char s[40];
+        sprintf(s, "Row %d", R);
+        fl_draw_box(FL_THIN_UP_BOX, X, Y, W, H, row_header_color());
+        fl_color(FL_BLACK);
+        fl_draw(s, X, Y, W, H, FL_ALIGN_CENTER);
+      }
+      fl_pop_clip();
+      return;
+</pre>
+<p>    case CONTEXT_COL_HEADER:
+</p><pre>
+      fl_push_clip(X, Y, W, H);
+      {
+        static char s[40];
+        sprintf(s, "Column %d", C);
+        fl_draw_box(FL_THIN_UP_BOX, X, Y, W, H, col_header_color());
+        fl_color(FL_BLACK);
+        fl_draw(s, X, Y, W, H, FL_ALIGN_CENTER);
+      }
+      fl_pop_clip();
+      return;
+</pre>
+<p>    case CONTEXT_CELL:<br/>
+      return;           // fltk handles drawing the widgets
+</p>
+<dl>
+  <dt>default</dt>
+<dd>      return;
+  }
+}
+</dd></dl>
+<p>void button_cb(Fl_Widget <em>w, void</em>) {<br/>
+  fprintf(stderr, "BUTTON: %s\n", (const char*)w-&gt;label());
+}
+</p>
+<p>int main() {<br/>
+  Fl_Double_Window win(940, 500, "table as container");
+  WidgetTable table(20, 20, win.w()-40, win.h()-40, "FLTK widget table");
+  table.SetSize(50, 50);<br/>
+  win.end();<br/>
+  win.resizable(table);<br/>
+  win.show();<br/>
+  return(Fl::run());<br/>
+}
+</p>
+<p>//<br/>
+// End of "$Id: table-as-container.cxx 9728 2012-11-20 18:32:59Z greg.ercolano $".
+//</p>
+
+</body>
+</html>

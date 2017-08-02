@@ -1,0 +1,660 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+<meta name="generator" content="HTML::TextToHTML v2.51"/>
+</head>
+<body>
+<p>/**
+</p>
+<p> \page  examples        Example Source Code
+</p>
+<p>The FLTK distribution contains over 60 sample applications written
+in, or ported to, FLTK. If the FLTK archive you received does not
+contain either an 'examples' or 'test' directory, you can download
+the complete FLTK distribution from \b <a href="http://fltk.org/software.php">http://fltk.org/software.php</a> .
+</p>
+<p>Most of the example programs were created while testing a group of widgets. 
+They are not meant to be great achievements in clean C++ programming, but
+merely a test platform to verify the functionality of the FLTK library.
+</p>
+<p>Note that extra example programs are also available in an additional
+'examples' directory, but these are \b NOT built automatically when
+you build FLTK, unlike those in the 'test' directory shown below.
+</p>
+<p>\section example_applications  Example Applications
+</p>
+<p>&lt;table width=100% border=0&gt;<br/>
+&lt;tr&gt;
+</p><pre>
+&lt;td&gt; \ref examples_adjuster        &lt;/td&gt;
+&lt;td&gt; \ref examples_arc             &lt;/td&gt;
+&lt;td&gt; \ref examples_ask             &lt;/td&gt;
+&lt;td&gt; \ref examples_bitmap          &lt;/td&gt;
+&lt;td&gt; \ref examples_blocks          &lt;/td&gt;
+&lt;td&gt; \ref examples_boxtype         &lt;/td&gt;
+</pre>
+<p>&lt;/tr&gt;<br/>
+&lt;tr&gt;
+</p><pre>
+&lt;td&gt; \ref examples_browser         &lt;/td&gt;
+&lt;td&gt; \ref examples_button          &lt;/td&gt;
+&lt;td&gt; \ref examples_buttons         &lt;/td&gt;
+&lt;td&gt; \ref examples_checkers        &lt;/td&gt;
+&lt;td&gt; \ref examples_clock           &lt;/td&gt;
+&lt;td&gt; \ref examples_colbrowser      &lt;/td&gt;
+</pre>
+<p>&lt;/tr&gt;<br/>
+&lt;tr&gt;<br/>
+&lt;td&gt; \ref examples_color_chooser   &lt;/td&gt;
+</p><pre>
+&lt;td&gt; \ref examples_cube            &lt;/td&gt;
+&lt;td&gt; \ref examples_CubeView        &lt;/td&gt;
+&lt;td&gt; \ref examples_cursor          &lt;/td&gt;
+&lt;td&gt; \ref examples_curve           &lt;/td&gt;
+&lt;td&gt; \ref examples_demo            &lt;/td&gt;
+</pre>
+<p>&lt;/tr&gt;<br/>
+&lt;tr&gt;<br/>
+&lt;td&gt; \ref examples_device       &lt;/td&gt;<br/>
+&lt;td&gt; \ref examples_doublebuffer    &lt;/td&gt;
+</p><pre>
+&lt;td&gt; \ref examples_editor          &lt;/td&gt;
+&lt;td&gt; \ref examples_fast_slow       &lt;/td&gt;
+&lt;td&gt; \ref examples_file_chooser    &lt;/td&gt;
+&lt;td&gt; \ref examples_fluid           &lt;/td&gt;
+</pre>
+<p>&lt;/tr&gt;<br/>
+&lt;tr&gt;
+</p><pre>
+&lt;td&gt; \ref examples_fonts           &lt;/td&gt;
+&lt;td&gt; \ref examples_forms           &lt;/td&gt;
+&lt;td&gt; \ref examples_fractals        &lt;/td&gt;
+&lt;td&gt; \ref examples_fullscreen      &lt;/td&gt;
+&lt;td&gt; \ref examples_gl_overlay      &lt;/td&gt;
+&lt;td&gt; \ref examples_glpuzzle        &lt;/td&gt;
+</pre>
+<p>&lt;/tr&gt;<br/>
+&lt;tr&gt;
+</p><pre>
+&lt;td&gt; \ref examples_hello           &lt;/td&gt;
+&lt;td&gt; \ref examples_help            &lt;/td&gt;
+&lt;td&gt; \ref examples_iconize         &lt;/td&gt;
+&lt;td&gt; \ref examples_image           &lt;/td&gt;
+&lt;td&gt; \ref examples_inactive        &lt;/td&gt;
+&lt;td&gt; \ref examples_input           &lt;/td&gt;
+</pre>
+<p>&lt;/tr&gt;<br/>
+&lt;tr&gt;<br/>
+&lt;td&gt; \ref examples_input_choice    &lt;/td&gt;
+</p><pre>
+&lt;td&gt; \ref examples_keyboard        &lt;/td&gt;
+&lt;td&gt; \ref examples_label           &lt;/td&gt;
+&lt;td&gt; \ref examples_line_style      &lt;/td&gt;
+&lt;td&gt; \ref examples_list_visuals    &lt;/td&gt;
+&lt;td&gt; \ref examples_mandelbrot      &lt;/td&gt;
+</pre>
+<p>&lt;/tr&gt;<br/>
+&lt;tr&gt;
+</p><pre>
+&lt;td&gt; \ref examples_menubar         &lt;/td&gt;
+&lt;td&gt; \ref examples_message         &lt;/td&gt;
+&lt;td&gt; \ref examples_minimum         &lt;/td&gt;
+&lt;td&gt; \ref examples_navigation      &lt;/td&gt;
+&lt;td&gt; \ref examples_output          &lt;/td&gt;
+&lt;td&gt; \ref examples_overlay         &lt;/td&gt;
+</pre>
+<p>&lt;/tr&gt;<br/>
+&lt;tr&gt;<br/>
+&lt;td&gt; \ref examples_pack            &lt;/td&gt;
+&lt;td&gt; \ref examples_pixmap_browser  &lt;/td&gt;
+</p><pre>
+&lt;td&gt; \ref examples_pixmap          &lt;/td&gt;
+&lt;td&gt; \ref examples_preferences     &lt;/td&gt;
+&lt;td&gt; \ref examples_radio           &lt;/td&gt;
+&lt;td&gt; \ref examples_resizebox       &lt;/td&gt;
+</pre>
+<p>&lt;/tr&gt;<br/>
+&lt;tr&gt;
+</p><pre>
+&lt;td&gt; \ref examples_resize          &lt;/td&gt;
+&lt;td&gt; \ref examples_scroll          &lt;/td&gt;
+&lt;td&gt; \ref examples_shape           &lt;/td&gt;
+&lt;td&gt; \ref examples_subwindow       &lt;/td&gt;
+&lt;td&gt; \ref examples_sudoku          &lt;/td&gt;
+&lt;td&gt; \ref examples_symbols         &lt;/td&gt;
+</pre>
+<p>&lt;/tr&gt;<br/>
+&lt;tr&gt;
+</p><pre>
+&lt;td&gt; \ref examples_tabs            &lt;/td&gt;
+&lt;td&gt; \ref examples_threads         &lt;/td&gt;
+&lt;td&gt; \ref examples_tile            &lt;/td&gt;
+&lt;td&gt; \ref examples_tiled_image     &lt;/td&gt;
+&lt;td&gt; \ref examples_unittests       &lt;/td&gt;
+&lt;td&gt; \ref examples_utf8            &lt;/td&gt;
+</pre>
+<p>&lt;/tr&gt;<br/>
+&lt;tr&gt;<br/>
+&lt;td&gt; \ref examples_valuators       &lt;/td&gt;
+&lt;/tr&gt;<br/>
+&lt;/table&gt;
+</p>
+<p>\subsection examples_adjuster adjuster
+</p>
+<p>\par<br/>
+\c adjuster shows a nifty little widget for quickly
+setting values in a great range.
+</p>
+<p>\subsection examples_arc arc
+</p>
+<p>\par<br/>
+The \c arc demo explains how to derive your own widget to
+generate some custom drawings. The sample drawings use the matrix
+based arc drawing for some fun effects.
+</p>
+<p>\subsection examples_ask ask
+</p>
+<p>\par<br/>
+\c ask shows some of FLTK's standard dialog boxes. Click
+the correct answers or you may end up in a loop, or you may end 
+up in a loop, or you... .
+</p>
+<p>\subsection examples_bitmap bitmap
+</p>
+<p>\par<br/>
+This simple test shows the use of a single color bitmap as a
+label for a box widget. Bitmaps are stored in the X11 '.bmp' 
+file format and can be part of the source code.
+</p>
+<p>\subsection examples_blocks blocks
+</p>
+<p>\par<br/>
+A wonderful and addictive game that shows the usage of FLTK
+timers, graphics, and how to implement sound on all platforms.
+\c blocks is also a good example for the Mac OS X specific
+bundle format.
+ 
+</p><p>\subsection examples_boxtype boxtype
+</p>
+<p>\par<br/>
+\c boxtype gives an overview of readily available boxes and
+frames in FLTK. More types can be added by the application programmer. 
+When using themes, FLTK shuffles boxtypes around to give your program
+a new look.
+</p>
+<p>\subsection examples_browser browser
+</p>
+<p>\par<br/>
+\c browser shows the capabilities of the Fl_Browser widget. 
+Important features tested are loading of files, line formatting, and
+correct positioning of the browser data window.
+</p>
+<p>\subsection examples_button button
+</p>
+<p>\par<br/>
+The \c button test is a simple demo of push-buttons and callbacks.
+</p>
+<p>\subsection examples_buttons buttons
+</p>
+<p>\par<br/>
+\c buttons shows a sample of FLTK button types.
+</p>
+<p>\subsection examples_checkers checkers
+</p>
+<p>\par<br/>
+Written by Steve Poulsen in early 1979, \c checkers shows
+how to convert a VT100 text-terminal based program into a neat
+application with a graphical UI. Check out the code that drags the
+pieces, and how the pieces are drawn by layering. Then tell me 
+how to beat the computer at Checkers.
+</p>
+<p>\subsection examples_clock clock
+</p>
+<p>\par<br/>
+The \c clock demo shows two analog clocks. The innards of
+the Fl_Clock widget are pretty interesting, explaining
+the use of timeouts and matrix based drawing.
+</p>
+<p>\subsection examples_colbrowser colbrowser
+</p>
+<p>\par<br/>
+\c colbrowser runs only on X11 systems. It reads 
+&lt;i&gt;/usr/lib/X11/rgb.txt&lt;/i&gt; to show the color representation
+of every text entry in the file. This is beautiful, but
+only moderately useful unless your UI is written in &lt;i&gt;Motif&lt;/i&gt;.
+</p>
+<p>\subsection examples_color_chooser color_chooser
+</p>
+<p>\par<br/>
+The \c color_chooser gives a short demo of FLTK's palette based
+color chooser and of the RGB based color wheel.
+</p>
+<p>\subsection examples_cube cube
+</p>
+<p>\par<br/>
+The \c cube demo shows the speed of OpenGL. It also tests
+the ability to render two OpenGL buffers into a single window, 
+and shows OpenGL text.
+</p>
+<p>\subsection examples_CubeView CubeView
+</p>
+<p>\par<br/>
+\c CubeView shows how to create a UI containing OpenGL with Fluid.
+</p>
+<p>\subsection examples_cursor cursor
+</p>
+<p>\par<br/>
+The \c cursor demo shows all mouse cursor shapes that come standard
+with FLTK. The &lt;i&gt;fgcolor&lt;/i&gt; and &lt;i&gt;bgcolor&lt;/i&gt; sliders work only
+on few systems (some version of Irix for example).
+</p>
+<p>\subsection examples_curve curve
+</p>
+<p>\par<br/>
+\c curve draws a nice Bezier curve into a custom widget. The 
+&lt;i&gt;points&lt;/i&gt; option for splines is not supported on all platforms.
+</p>
+<p>\subsection examples_demo demo
+</p>
+<p>\par<br/>
+This tool allows quick access to all programs in the \c test directory. 
+\c demo is based on the visuals of the IrixGL demo program. The menu 
+tree can be changed by editing &lt;tt&gt;test/demo.menu&lt;/tt&gt;.
+</p>
+<p>\subsection examples_device device
+</p>
+<p>\par<br/>
+Exercises the Fl_Image_Surface, Fl_Copy_Surface, and Fl_Printer classes to draw to an
+Fl_Image object, copy graphical data to the clipboard, and for print support.
+\note The clipboard.cxx program of the 'examples' directory is a clipboard watching 
+application that continuously displays the textual or graphical content of the system
+clipboard (a.k.a pasteboard on Mac OS X) exercising Fl::paste().
+</p>
+<p>\subsection examples_doublebuffer doublebuffer
+</p>
+<p>\par<br/>
+The \c doublebuffer demo shows the difference between a single
+buffered window, which may flicker during a slow redraw, and a 
+double buffered window, which never flickers, but uses twice the
+amount of RAM. Some modern OS's double buffer all windows automatically
+to allow transparency and shadows on the desktop. FLTK is smart enough
+to not tripple buffer a window in that case.
+</p>
+<p>\subsection examples_editor editor
+</p>
+<p>\par<br/>
+FLTK has two very different text input widgets. Fl_Input 
+and derived classes are rather light weight, however 
+Fl_Text_Editor is a complete port of &lt;i&gt;nedit&lt;/i&gt; (with permission). 
+The \c editor test is almost a full application, showing custom
+syntax highlighting and dialog creation. 
+</p>
+<p>\subsection examples_fast_slow fast_slow
+</p>
+<p>\par<br/>
+\c fast_slow shows how an application can use the Fl_Widget::when()
+setting to receive different kinds of callbacks.
+</p>
+<p>\subsection examples_file_chooser file_chooser
+</p>
+<p>\par<br/>
+The standard FLTK \c file_chooser is the result of many
+iterations, trying to find a middle ground between a complex 
+browser and a fast light implementation.
+</p>
+<p>\subsection examples_fonts fonts
+</p>
+<p>\par<br/>
+\c fonts shows all available text fonts on the host system.
+If your machine still has some pixmap based fonts, the supported
+sizes will be shown in bold face. Only the first 256 fonts will 
+be listed.
+</p>
+<p>\subsection examples_forms forms
+</p>
+<p>\par<br/>
+\c forms is an XForms program with very few changes.
+Search for "fltk" to find all changes necessary to port to fltk.
+This demo shows the different boxtypes. Note that some
+boxtypes are not appropriate for some objects.
+</p>
+<p>\subsection examples_fractals fractals
+</p>
+<p>\par<br/>
+\c fractals shows how to mix OpenGL, Glut and FLTK code.
+FLTK supports a rather large subset of Glut, so that many Glut
+applications compile just fine.
+</p>
+<p>\subsection examples_fullscreen fullscreen
+</p>
+<p>\par<br/>
+This demo shows how to do many of the window manipulations that
+are popular for games.<br/>
+You can toggle the border on/off, switch between single- 
+and double-buffered rendering, and take over the entire
+screen. More information in the source code.
+</p>
+<p>\subsection examples_gl_overlay gl_overlay
+</p>
+<p>\par<br/>
+\c gl_overlay shows OpenGL overlay plane rendering. If no
+hardware overlay plane is available, FLTK will simulate it
+for you.
+</p>
+<p>\subsection examples_glpuzzle glpuzzle
+</p>
+<p>\par<br/>
+The \c glpuzzle test shows how most Glut source code compiles
+easily under FLTK.
+</p>
+<p>\subsection examples_hello hello
+</p>
+<p>\par<br/>
+\c hello: Hello, World. Need I say more? Well, maybe. This 
+tiny demo shows how little is needed to get a functioning application
+running with FLTK. Quite impressive, I'd say.
+</p>
+<p>\subsection examples_help help
+</p>
+<p>\par<br/>
+\c help displays the built-in FLTK help browser. The 
+Fl_Help_Dialog understands a subset of html and renders
+various image formats. This widget makes it easy to provide help
+pages to the user without depending on the operating system's 
+html browser.
+</p>
+<p>\subsection examples_iconize iconize
+</p>
+<p>\par<br/>
+\c iconize demonstrates the effect of the window functions
+hide(), iconize(), and show().
+</p>
+<p>\subsection examples_image image
+</p>
+<p>\par<br/>
+The \c image demo shows how an image can be created on the fly.
+This generated image contains an alpha (transparency) channel which
+lets previous renderings 'shine through', either via true 
+transparency or by using screen door transparency (pixelation).
+</p>
+<p>\subsection examples_inactive inactive
+</p>
+<p>\par<br/>
+\c inactive tests the correct rendering of inactive widgets.
+To see the inactive version of images, you can check out the pixmap 
+or image test.
+</p>
+<p>\subsection examples_input input
+</p>
+<p>\par<br/>
+This tool shows and tests different types of text input fields based on
+Fl_Input_. The \c input program also tests various 
+settings of Fl_Input::when().
+</p>
+<p>\subsection examples_input_choice input_choice
+</p>
+<p>\par<br/>
+\c input_choice tests the latest addition to FLTK1, a text input 
+field with an attached pulldown menu. Windows users will recognize 
+similarities to the 'ComboBox'. \c input_choice starts up in 
+'plastic' scheme, but the traditional scheme is also supported.
+</p>
+<p>\subsection examples_keyboard keyboard
+</p>
+<p>\par<br/>
+FLTK unifies keyboard events for all platforms. The \c keyboard
+test can be used to check the return values of Fl::event_key()
+and Fl::event_text(). It is also great to see the modifier 
+buttons and the scroll wheel at work. Quit this application by closing
+the window. The ESC key will not work. 
+</p>
+<p>\subsection examples_label label
+</p>
+<p>\par<br/>
+Every FLTK widget can have a label attached to it. The \c label 
+demo shows alignment, clipping, and wrapping of text labels. Labels
+can contain symbols at the start and end of the text, like &lt;i&gt;\@FLTK&lt;/i&gt;
+or &lt;i&gt;\@circle uh-huh \@square&lt;/i&gt;.
+</p>
+<p>\subsection examples_line_style line_style
+</p>
+<p>\par<br/>
+Advanced line drawing can be tested with \c line_style. 
+Not all platforms support all line styles.
+</p>
+<p>\subsection examples_list_visuals list_visuals
+</p>
+<p>\par<br/>
+This little app finds all available pixel formats for the current X11
+screen. But since you are now an FLTK user, you don't have to worry 
+about any of this.
+</p>
+<p>\subsection examples_mandelbrot mandelbrot
+</p>
+<p>\par<br/>
+\c mandelbrot shows two advanced topics in one test. It creates
+grayscale images on the fly, updating them via the &lt;i&gt;idle&lt;/i&gt; callback
+system. This is one of the few occasions where the &lt;i&gt;idle&lt;/i&gt; callback
+is very useful by giving all available processor time to the application
+without blocking the UI or other apps.
+</p>
+<p>\subsection examples_menubar menubar
+</p>
+<p>\par<br/>
+The \c menubar tests many aspects of FLTK's popup menu system.
+Among the features are radio buttons, menus taller than the screen,
+arbitrary sub menu depth, and global shortcuts.
+</p>
+<p>\subsection examples_message message
+</p>
+<p>\par<br/>
+\c message pops up a few of FLTK's standard message boxes.
+</p>
+<p>\subsection examples_minimum minimum
+</p>
+<p>\par<br/>
+The \c minimum test program verifies that the update regions
+are set correctly. In a real life application, the trail would
+be avoided by choosing a smaller label or by setting label clipping
+differently. 
+</p>
+<p>\subsection examples_navigation navigation
+</p>
+<p>\par<br/>
+\c navigation demonstrates how the text cursor moves from
+text field to text field when using the arrow keys, tab, and shift-tab.
+</p>
+<p>\subsection examples_output output
+</p>
+<p>\par<br/>
+\c output shows the difference between the single line and
+multi line mode of the Fl_Output widget. Fonts can be
+selected from the FLTK standard list of fonts.
+</p>
+<p>\subsection examples_overlay overlay
+</p>
+<p>\par<br/>
+The \c overlay test app shows how easy an FLTK window can
+be layered to display cursor and manipulator style elements. This
+example derives a new class from Fl_Overlay_Window and 
+provides a new function to draw custom overlays.
+</p>
+<p>\subsection examples_pack pack
+</p>
+<p>\par<br/>
+The \c pack test program demonstrates the resizing
+and repositioning of children of the Fl_Pack group.
+Putting an Fl_Pack into an Fl_Scroll is 
+a useful way to create a browser for large sets of data.
+</p>
+<p>\subsection examples_pixmap_browser pixmap_browser
+</p>
+<p>\par<br/>
+\c pixmap_browser tests the shared-image interface. When using
+the same image multiple times, Fl_Shared_Image will keep it
+only once in memory.
+</p>
+<p>\subsection examples_pixmap pixmap
+</p>
+<p>\par<br/>
+This simple test shows the use of a LUT based pixmap as a
+label for a box widget. Pixmaps are stored in the X11 '.xpm' 
+file format and can be part of the source code. Pixmaps support
+one transparent color.
+</p>
+<p>\subsection examples_preferences preferences
+</p>
+<p>\par<br/>
+I do have my \c preferences in the morning, but sometimes I
+just can't remember a thing. This is where the Fl_Preferences
+come in handy. They remember any kind of data between program launches.
+</p>
+<p>\subsection examples_radio radio
+</p>
+<p>\par<br/>
+The \c radio tool was created entirely with &lt;i&gt;fluid&lt;/i&gt;. It
+shows some of the available button types and tests radio 
+button behavior.
+</p>
+<p>\subsection examples_resizebox resizebox
+</p>
+<p>\par<br/>
+\c resizebox shows some possible ways of FLTK's automatic
+resize behavior.
+</p>
+<p>\subsection examples_resize resize
+</p>
+<p>\par<br/>
+The \c resize demo tests size and position functions with
+the given window manager.
+</p>
+<p>\subsection examples_scroll scroll
+</p>
+<p>\par<br/>
+\c scroll shows how to scroll an area of widgets, one of
+them being a slow custom drawing. Fl_Scroll uses 
+clipping and smart window area copying to improve redraw speed.
+The buttons at the bottom of the window control decoration rendering
+and updates.
+</p>
+<p>\subsection examples_shape shape
+</p>
+<p>\par<br/>
+\c shape is a very minimal demo that shows how to create
+your own OpenGL rendering widget. Now that you know that, go ahead 
+and write that flight simulator you always dreamt of.
+</p>
+<p>\subsection examples_subwindow subwindow
+</p>
+<p>\par<br/>
+The \c subwindow demo tests messaging and drawing between 
+the main window and 'true' sub windows. A sub window is different
+to a group by resetting the FLTK coordinate system to 0, 0 in the
+top left corner. On Win32 and X11, subwindows have their own 
+operating system specific handle.
+</p>
+<p>\subsection examples_sudoku sudoku
+</p>
+<p>\par<br/>
+Another highly addictive game - don't play it, I warned you.
+The implementation shows how to create application icons,
+how to deal with OS specifics, and how to generate sound.
+</p>
+<p>\subsection examples_symbols symbols
+</p>
+<p>\par<br/>
+\c symbols are a speciality of FLTK. These little vector 
+drawings can be integrated into labels. They scale and rotate,
+and with a little patience, you can define your own. The rotation 
+number refers to 45 degree rotations if you were looking at a 
+numeric keypad (2 is down, 6 is right, etc.).
+</p>
+<p>\subsection examples_tabs tabs
+</p>
+<p>\par<br/>
+The \c tabs tool was created with &lt;i&gt;fluid&lt;/i&gt;. It tests
+correct hiding and redisplaying of tabs, navigation across tabs, 
+resize behavior, and no unneeded redrawing of invisible widgets.
+</p>
+<p>\par<br/>
+The \c tabs application shows the Fl_Tabs widget
+on the left and the Fl_Wizard widget on the right side 
+for direct comparison of these two panel management widgets.
+</p>
+<p>\subsection examples_threads threads
+</p>
+<p>\par<br/>
+FLTK can be used in a multithreading environment. There are some
+limitations, mostly due to the underlying operating system. 
+\c threads shows how to use Fl::lock(), 
+Fl::unlock(), and Fl::awake() in secondary threads 
+to keep FLTK happy. Although locking works on all platforms, 
+this demo is not available on every machine.
+</p>
+<p>\subsection examples_tile tile
+</p>
+<p>\par<br/>
+The \c tile tool shows a nice way of using Fl_Tile.
+To test correct resizing of subwindows, the widget for region 
+1 is created from an Fl_Window class.
+</p>
+<p>\subsection examples_tiled_image tiled_image
+</p>
+<p>\par<br/>
+The \c tiled_image demo uses an image as the background
+for a window by repeating it over the full size of the widget.
+The window is resizable and shows how the image gets repeated.
+</p>
+<p>\subsection examples_unittests unittests
+</p>
+<p>\par<br/>
+\c unittests exercises all of FLTK's drawing features (e.g., text, lines, circles, images),
+as well as scrollbars and schemes.
+</p>
+<p>\subsection examples_utf8 utf8
+</p>
+<p>\par<br/>
+\c utf8 shows all fonts available to the platform that runs it, and how each font
+draws each of the Unicode code points ranging between U+0020 and U+FFFF.
+</p>
+<p>\subsection examples_valuators valuators
+</p>
+<p>\par<br/>
+\c valuators shows all of FLTK's nifty widgets to change
+numeric values.
+</p>
+<p>\subsection examples_fluid fluid
+</p>
+<p>\par<br/>
+\c fluid is not only a big test program, but also a very 
+useful visual UI designer. Many parts of \c fluid were 
+created using \c fluid. See the \link fluid Fluid Tutorial \endlink
+for more details.
+</p>
+<p>\htmlonly<br/>
+&lt;hr&gt;<br/>
+&lt;table summary="navigation bar" width="100%" border="0"&gt;
+&lt;tr&gt;<br/>
+  &lt;td width="45%" align="LEFT"&gt;<br/>
+    &lt;a class="el" href="license.html"&gt;<br/>
+    [Prev]<br/>
+    Software License<br/>
+    &lt;/a&gt;<br/>
+  &lt;/td&gt;<br/>
+  &lt;td width="10%" align="CENTER"&gt;<br/>
+    &lt;a class="el" href="index.html"&gt;[Index]&lt;/a&gt;
+  &lt;/td&gt;<br/>
+  &lt;td width="45%" align="RIGHT"&gt;<br/>
+    &amp;nbsp;<br/>
+    &lt;/a&gt;<br/>
+  &lt;/td&gt;<br/>
+&lt;/tr&gt;<br/>
+&lt;/table&gt;<br/>
+\endhtmlonly
+</p>
+<p>*/</p>
+
+</body>
+</html>

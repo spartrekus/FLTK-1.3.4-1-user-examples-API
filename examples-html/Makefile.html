@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+<meta name="generator" content="HTML::TextToHTML v2.51"/>
+</head>
+<body>
+<p>#<br/>
+# Stuff every FLTK application might need
+#<br/>
+#    If you take this for use in your own project, be sure to change
+#    the 'FLTKCONFIG' setting to point to where it's installed
+#    on your system. Common examples:<br/>
+#
+</p><pre>
+#       FLTKCONFIG = /usr/local/bin/fltk-config
+#       FLTKCONFIG = /usr/local/src/fltk-1.3.x-svn/fltk-config
+</pre>
+<p>#<br/>
+#    Set .SILENT in your Makefile if you want 'quieter' builds.
+#
+</p>
+<p>ifeq '$(OS)' "Windows_NT"<br/>
+EXEEXT = .exe<br/>
+endif
+</p>
+<p>FLTKCONFIG   = ../fltk-config
+</p><pre>
+CXX          = $(shell $(FLTKCONFIG) --cxx)
+CXXFLAGS     = $(shell $(FLTKCONFIG) --cxxflags) -Wall -I.
+LINKFLTK     = $(shell $(FLTKCONFIG) --ldstaticflags)
+</pre>
+<p>LINKFLTK_GL  = $(shell $(FLTKCONFIG) --use-gl --ldstaticflags)
+LINKFLTK_IMG = $(shell $(FLTKCONFIG) --use-images --ldstaticflags)
+LINKFLTK_ALL = $(shell $(FLTKCONFIG) --use-images --use-gl --ldstaticflags)
+.SUFFIXES: .cxx .h .fl .o $(EXEEXT)
+</p>
+<p><strong># HOW TO COMPILE</strong><br/>
+.cxx.o:
+</p><pre>
+        @echo "*** Compile $&lt;..."
+        $(CXX) -I.. $(CXXFLAGS) -c $&lt; -o $@
+</pre>
+<p><strong># HOW TO LINK</strong><br/>
+.o$(EXEEXT):
+</p><pre>
+        @echo "*** Linking $@..."
+        $(CXX) $&lt; $(LINKFLTK_ALL) -o $@
+</pre>
+</body>
+</html>

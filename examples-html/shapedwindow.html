@@ -1,0 +1,140 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+<meta name="generator" content="HTML::TextToHTML v2.51"/>
+</head>
+<body>
+<p>//<br/>
+// "$Id: shapedwindow.cxx 11493 2016-03-31 21:50:34Z AlbrechtS $"
+//<br/>
+// shapedwindow example source file for the Fast Light Tool Kit (FLTK).
+//<br/>
+// Copyright 1998-2014 by Bill Spitzak and others.
+//<br/>
+// This library is free software. Distribution and use rights are outlined in
+// the file "COPYING" which should have been included with this file.  If this
+// file is missing or damaged, see the license at:
+//<br/>
+//     <a href="http://www.fltk.org/COPYING.php">http://www.fltk.org/COPYING.php</a><br/>
+//<br/>
+// Please report all bugs and problems to:
+//<br/>
+//     <a href="http://www.fltk.org/str.php">http://www.fltk.org/str.php</a><br/>
+//
+</p>
+<p>#include &lt;FL/Fl_Window.H&gt;<br/>
+#include &lt;FL/Fl_Button.H&gt;<br/>
+#include &lt;FL/Fl_Box.H&gt;<br/>
+#include &lt;FL/Fl.H&gt;<br/>
+#include &lt;FL/fl_draw.H&gt;<br/>
+#include &lt;FL/Fl_Double_Window.H&gt;<br/>
+#include &lt;FL/Fl_Image.H&gt;<br/>
+#include &lt;FL/Fl_Tiled_Image.H&gt;<br/>
+#include &lt;FL/Fl_Image_Surface.H&gt;<br/>
+#include "test/pixmaps/tile.xpm"
+</p>
+<p>void cb(Fl_Widget *w, void *) {<br/>
+  w-&gt;window()-&gt;hide();<br/>
+}
+</p>
+<p>class dragbox : public Fl_Box {<br/>
+public:<br/>
+  dragbox(int x, int y, int w, int h, const char *t=0) : Fl_Box(x,y,w,h,t) {};
+  int handle(int event) {<br/>
+    static int fromx, fromy, winx, winy;
+    if (event == FL_PUSH) {
+</p><pre>
+      fromx = Fl::event<u>x</u>root();
+      fromy = Fl::event<u>y</u>root();
+      winx = window()-&gt;x_root();
+      winy = window()-&gt;y_root();
+      return 1;
+</pre>
+<p>    }<br/>
+    else if (event == FL_DRAG) {
+</p><pre>
+      int deltax = Fl::event<u>x</u>root() - fromx;
+      int deltay = Fl::event<u>y</u>root() - fromy;
+      window()-&gt;position(winx + deltax, winy + deltay);
+      return 1;
+</pre>
+<p>    }<br/>
+    return Fl_Box::handle(event);<br/>
+  }<br/>
+};
+</p>
+<p>const float factor = 1.3;
+</p>
+<p>void shrink(Fl_Widget *wdgt, void *data)
+{<br/>
+  Fl_Window *win = wdgt-&gt;window();<br/>
+  int old = win-&gt;w();<br/>
+  win-&gt;size(old/factor, old/factor);<br/>
+  if (win-&gt;w() &lt;= <em>(int</em>)data) wdgt-&gt;deactivate();
+}
+</p>
+<p>void enlarge(Fl_Widget *wdgt, void *data)
+{<br/>
+  Fl_Window <em>win = wdgt-&gt;window();<br/>
+  int old = win-&gt;w();<br/>
+  win-&gt;size(old</em>factor, old<em>factor);<br/>
+  ((Fl_Widget</em>)data)-&gt;activate();<br/>
+}
+</p>
+<p>Fl_RGB_Image* prepare_shape(int w)<br/>
+{<br/>
+  // draw a white circle with a hole in it on black background
+  Fl_Image_Surface <em>surf = new Fl_Image_Surface(w, w);
+  Fl_Surface_Device</em> current = Fl_Surface_Device::surface();
+  surf-&gt;set_current();<br/>
+  fl_color(FL_BLACK);<br/>
+  fl_rectf(-1, -1, w+2, w+2);<br/>
+  fl_color(FL_WHITE);<br/>
+  fl_pie(2,2,w-4,w-4,0,360);<br/>
+  fl_color(FL_BLACK);<br/>
+  fl_pie(0.7<em>w,w/2,w/4,w/4,0,360);<br/>
+  Fl_RGB_Image</em> img = surf-&gt;image();<br/>
+  delete surf;<br/>
+  current-&gt;set_current();<br/>
+  return img; // return white image on black background
+}
+</p>
+<p>int main(int argc, char **argv) {<br/>
+  int dim = 200;<br/>
+  Fl_Double_Window *win = new Fl_Double_Window(100, 100, dim, dim, "Testing1");
+  Fl_RGB_Image *img = prepare_shape(dim);
+  win-&gt;shape(img);<br/>
+  dragbox *box = new dragbox(0, 0, win-&gt;w(), win-&gt;h());
+  box-&gt;image(new Fl_Tiled_Image(new Fl_Pixmap((const char * const *)tile_xpm)));
+  Fl_Group *g = new Fl_Group(10, 20, 80, 20);
+  g-&gt;box(FL_NO_BOX);<br/>
+  Fl_Button *b = new Fl_Button(10, 20, 80, 20, "Close");
+  b-&gt;callback(cb);<br/>
+  g-&gt;end();<br/>
+  g-&gt;resizable(NULL);<br/>
+  g = new Fl_Group(60, 70, 80, 40, "Drag me");
+  g-&gt;box(FL_NO_BOX);<br/>
+  g-&gt;align(FL_ALIGN_TOP);<br/>
+  Fl_Button *bs = new Fl_Button(60, 70, 80, 20, "Shrink");
+  bs-&gt;callback(shrink, &amp;dim);<br/>
+  bs-&gt;deactivate();<br/>
+  Fl_Button *be = new Fl_Button(60, 90, 80, 20, "Enlarge");
+  be-&gt;callback(enlarge, bs);<br/>
+  g-&gt;end();<br/>
+  g-&gt;resizable(NULL);<br/>
+  win-&gt;end();<br/>
+  win-&gt;resizable(win);<br/>
+  win-&gt;show(argc, argv);<br/>
+  Fl::run();<br/>
+  delete win;<br/>
+  return 0;<br/>
+}
+</p>
+<p>//<br/>
+// End of "$Id: shapedwindow.cxx 11493 2016-03-31 21:50:34Z AlbrechtS $".
+//</p>
+
+</body>
+</html>

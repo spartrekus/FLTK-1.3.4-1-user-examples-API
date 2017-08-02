@@ -1,0 +1,205 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+<meta name="generator" content="HTML::TextToHTML v2.51"/>
+</head>
+<body>
+<p>//<br/>
+// "$Id: howto-browser-with-icons.cxx 9845 2013-03-23 18:40:53Z greg.ercolano $"
+//<br/>
+//    Demonstrate creating an Fl_Browser with icons - Greg Ercolano 10/07/09 (STR#1739)
+//<br/>
+//    Shows how one can add icons to items in a browser.
+//<br/>
+// Copyright 2009,2013 Greg Ercolano.<br/>
+// Copyright 1998-2010 by Bill Spitzak and others.
+//<br/>
+// This library is free software. Distribution and use rights are outlined in
+// the file "COPYING" which should have been included with this file.  If this
+// file is missing or damaged, see the license at:
+//<br/>
+//     <a href="http://www.fltk.org/COPYING.php">http://www.fltk.org/COPYING.php</a><br/>
+//<br/>
+// Please report all bugs and problems on the following page:
+//<br/>
+//     <a href="http://www.fltk.org/str.php">http://www.fltk.org/str.php</a><br/>
+// <br/>
+#include &lt;FL/Fl.H&gt;<br/>
+#include &lt;FL/Fl_Double_Window.H&gt;<br/>
+#include &lt;FL/Fl_Browser.H&gt;<br/>
+#include &lt;FL/Fl_Choice.H&gt;<br/>
+#include &lt;FL/Fl_Image.H&gt;<br/>
+#include &lt;FL/Fl_Pixmap.H&gt;
+</p>
+<p>static const char *big[] = {                       // XPM
+  "50 34 4 1",<br/>
+  "  c #000000",<br/>
+  "o c #ff9900",<br/>
+  "@ c <strong>ffffff",<br/>
+  "</strong> c None",<br/>
+  "#################################################<strong>",
+  "</strong>##      ##############################       ###<strong>",
+  "</strong>## ooooo  ###########################  ooooo ###<strong>",
+  "</strong>## oo  oo  #########################  oo  oo ###<strong>",
+  "</strong>## oo   oo  #######################  oo   oo ###<strong>",
+  "</strong>## oo    oo  #####################  oo    oo ###<strong>",
+</p><pre>
+  "</strong>## oo     oo  ###################  oo     oo ###<strong>",
+  "</strong>## oo      oo                     oo      oo ###<strong>",
+  "</strong>## oo       oo  ooooooooooooooo  oo       oo ###<strong>",
+  "</strong>## oo        ooooooooooooooooooooo        oo ###<strong>",
+  "</strong>## oo     ooooooooooooooooooooooooooo    ooo ####",
+</pre>
+<p>  "#### oo   ooooooo ooooooooooooo ooooooo   oo ####<strong>",
+  "</strong>###  oo oooooooo ooooooooooooo oooooooo oo  ####<strong>",
+  "</strong>#### oo oooooooo ooooooooooooo oooooooo oo #####<strong>",
+  "</strong>####  o ooooooooooooooooooooooooooooooo o  #####<strong>",
+  "</strong>##### ooooooooooooooooooooooooooooooooooo ######<strong>",
+  "</strong>#### ooooooooo     ooooooooo     ooooooooo #####<strong>",
+  "</strong>#### oooooooo  @@@  ooooooo  @@@  oooooooo #####<strong>",
+  "</strong>#### oooooooo @@@@@ ooooooo @@@@@ oooooooo #####<strong>",
+  "</strong>#### oooooooo @@@@@ ooooooo @@@@@ oooooooo #####<strong>",
+  "</strong>#### oooooooo  @@@  ooooooo  @@@  oooooooo #####<strong>",
+</p><pre>
+  "</strong>#### ooooooooo     ooooooooo     ooooooooo #####<strong>",
+  "</strong>##### oooooooooooooo       oooooooooooooo ######<strong>",
+  "</strong>##### oooooooo@@@@@@@     @@@@@@@oooooooo #######",
+</pre>
+<p>  "###### ooooooo@@@@@@@@@   @@@@@@@@@ooooooo ######<strong>",
+  "</strong>###### ooooo@@@@@@@@@@@ @@@@@@@@@@@ooooo #######<strong>",
+  "</strong>######## oo@@@@@@@@@@@@ @@@@@@@@@@@@oo #########<strong>",
+  "</strong>######### o@@@@@@ @@@@@ @@@@@ @@@@@@o ##########<strong>",
+  "</strong>########## @@@@@@@     @     @@@@@@@ ###########<strong>",
+  "</strong>###########  @@@@@@@@@@@@@@@@@@@@@  ############<strong>",
+  "</strong>#############  @@@@@@@@@@@@@@@@@  ##############<strong>",
+  "</strong>###############    @@@@@@@@@    ################<strong>",
+  "</strong>###################         ####################<strong>",
+  "</strong>#################################################",
+};
+</p>
+<p>static const char *med[] = {                       // XPM
+  "14 14 2 1",<br/>
+  "# c #000000",<br/>
+  "  c <strong>ffffff",<br/>
+  "</strong>############<strong>",<br/>
+  "</strong>############<strong>",<br/>
+  "</strong>#          #<strong>",<br/>
+  "</strong>#  ##  ##  #<strong>",<br/>
+  "</strong>#  ##  ##  #<strong>",<br/>
+  "</strong>#   ####   #<strong>",<br/>
+  "</strong>#    ##    #<strong>",<br/>
+  "</strong>#    ##    #<strong>",<br/>
+  "</strong>#   ####   #<strong>",<br/>
+  "</strong>#  ##  ##  #<strong>",<br/>
+  "</strong>#  ##  ##  #<strong>",<br/>
+  "</strong>#          #<strong>",<br/>
+  "</strong>############<strong>",<br/>
+  "</strong>#############",<br/>
+};
+</p>
+<p>static const char *sml[] = {                       // XPM
+  "9 11 5 1",<br/>
+  ".  c None",<br/>
+  "@  c #000000",<br/>
+  "+  c #808080",<br/>
+  "r  c #802020",<br/>
+  "#  c #ff8080",
+</p><pre>
+  ".........",
+  ".........",
+  "@+.......",
+  "@@@+.....",
+</pre>
+<p>  "@@r@@+...",<br/>
+  "@@#<strong>r@@+.",<br/>
+  "@@</strong>##<strong>r@@",<br/>
+  "@@</strong>#r@@+.",<br/>
+  "@@r@@+...",
+</p><pre>
+  "@@@+.....",
+  "@+.......",
+</pre>
+<p>};
+</p>
+<p>// Create a custom browser<br/>
+//<br/>
+//    You don't <em>have</em> to derive a class just to control icons in a browser,
+//    but in final apps it's something you'd do to keep the implementation clean.
+//<br/>
+//    All it really comes down to is calling browser-&gt;icon() to define icons
+//    for the items you want.<br/>
+//<br/>
+class MyBrowser : public Fl_Browser {<br/>
+  Fl_Image *big_icon;<br/>
+  Fl_Image *med_icon;<br/>
+  Fl_Image *sml_icon;
+</p>
+<dl>
+  <dt>public</dt>
+<dd>  MyBrowser(int X,int Y,int W,int H,const char *L=0) : Fl_Browser(X,Y,W,H,L) {
+</dd></dl>
+<p>    // Create icons (these could also be pngs, jpegs..)
+    big_icon = new Fl_Pixmap(big);<br/>
+    med_icon = new Fl_Pixmap(med);<br/>
+    sml_icon = new Fl_Pixmap(sml);
+</p>
+<p>    // Normal browser initialization stuff
+    textfont(FL_COURIER);<br/>
+    textsize(14);<br/>
+    type(FL_MULTI_BROWSER);<br/>
+    add("One");<br/>
+    add("Two");<br/>
+    add("Three");<br/>
+    add("Four");<br/>
+    add("Five");<br/>
+    add("Six");<br/>
+    add("Seven");<br/>
+  }<br/>
+  static void Choice_CB(Fl_Widget*w, void *d) {
+    MyBrowser <em>mb = (MyBrowser</em>)d;<br/>
+    Fl_Choice <em>ch = (Fl_Choice</em>)w;
+</p>
+<p>    // See which icon the user picked<br/>
+    Fl_Image *i = 0;
+</p><p>         if ( strcmp(ch-&gt;text(), "None"  ) == 0 ) { i = 0; }
+    else if ( strcmp(ch-&gt;text(), "Small" ) == 0 ) { i = mb-&gt;sml_icon; }
+    else if ( strcmp(ch-&gt;text(), "Medium") == 0 ) { i = mb-&gt;med_icon; }
+    else if ( strcmp(ch-&gt;text(), "Large" ) == 0 ) { i = mb-&gt;big_icon; }
+</p>
+<p>    // Change the icon of three browser items to what the user picked
+    //    This is all you have to do to change a browser item's icon.
+    //    The browser will automatically resize the items if need be.
+    mb-&gt;icon(3,i);<br/>
+    mb-&gt;icon(4,i);<br/>
+    mb-&gt;icon(5,i);<br/>
+  }<br/>
+};<br/>
+int main() {<br/>
+  Fl_Double_Window *w = new Fl_Double_Window(400,300);
+</p>
+<p>  // Create a browser<br/>
+  MyBrowser *b = new MyBrowser(10,40,w-&gt;w()-20,w-&gt;h()-50);
+</p>
+<p>  // Create a chooser to let the user change the icons
+  Fl_Choice <em>choice = new Fl_Choice(60,10,140,25,"Icon:");
+  choice-&gt;add("None");<br/>
+  choice-&gt;add("Small");<br/>
+  choice-&gt;add("Medium");<br/>
+  choice-&gt;add("Large");<br/>
+  choice-&gt;callback(MyBrowser::Choice_CB, (void</em>)b);
+  choice-&gt;take_focus();<br/>
+  choice-&gt;value(1); choice-&gt;do_callback();
+</p>
+<p>  w-&gt;end();<br/>
+  w-&gt;show();<br/>
+  return(Fl::run());<br/>
+} 
+</p>
+<p>//<br/>
+// End of "$Id: howto-browser-with-icons.cxx 9845 2013-03-23 18:40:53Z greg.ercolano $".
+//</p>
+
+</body>
+</html>

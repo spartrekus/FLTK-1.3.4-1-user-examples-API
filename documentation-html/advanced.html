@@ -1,0 +1,460 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+<meta name="generator" content="HTML::TextToHTML v2.51"/>
+</head>
+<body>
+<p>/**
+</p>
+<p> \page advanced Advanced FLTK
+</p>
+<p>This chapter explains advanced programming and design topics
+that will help you to get the most out of FLTK.
+</p>
+<p>\section advanced_multithreading Multithreading
+</p>
+<p>FLTK can be used to implement a GUI for a multithreaded application
+but, as with multithreaded programming generally, there are some
+concepts and caveats that must be kept in mind.
+</p>
+<p>Key amongst these is that, for many of the target platforms on
+which FLTK is supported, only the \p main() thread of the
+process is permitted to handle system events, create or destroy windows
+and open or close windows. Further, only the
+\p main() thread of the process can safely write to the display.
+</p>
+<p>To support this in a portable way, all FLTK \p draw() methods are
+executed in the \p main() thread. A worker thread may update the
+state of an existing widget, but it may not do any rendering directly,
+nor create or destroy a window.<br/>
+(\b NOTE: A special case exists for Fl_Gl_Window where it can, with
+suitable precautions, be possible<br/>
+to safely render to an existing GL context from a worker thread.)
+</p>
+<p>&lt;H3&gt;Creating portable threads&lt;/H3&gt;<br/>
+We do not provide a threading interface as part of
+the library. A simple example showing how threads can be implemented,
+for all supported platforms, can be found in \p test/threads.h
+and \p test/threads.cxx.
+</p>
+<p>FLTK has been used with a variety of thread
+interfaces, so if the simple example shown in \p test/threads.cxx
+does not cover your needs, you might want to select a third-party
+library that provides the features you require.
+</p>
+<p>\section advanced_multithreading_lock FLTK multithread locking - Fl::lock() and Fl::unlock()
+</p>
+<p>In a multithreaded<br/>
+program, drawing of widgets (in the \p main() thread) happens
+asynchronously to widgets being updated by worker threads, so
+no drawing can occur safely whilst a widget is being modified
+(and no widget should be modified whilst drawing is in progress).
+</p>
+<p>FLTK supports multithreaded applications using a locking mechanism
+internally. This allows a worker thread to lock the rendering context,
+preventing any drawing from taking place,
+whilst it changes the value of its widget.
+</p>
+<p>\note<br/>
+The converse is also true;<br/>
+whilst a worker thread holds the lock, the \p main() thread may not
+be able to process any drawing requests, nor service any events.
+So a worker thread that holds the FLTK lock \b must contrive to do so
+for the shortest time possible or it could impair operation
+of the application.
+</p>
+<p>The lock operates broadly as follows.
+</p>
+<p>Using the FLTK library, the \p main() thread holds the lock
+whenever it is processing events or redrawing the display.
+It acquires (locks) and releases (unlocks) the FLTK lock
+automatically and no "user intervention" is required.
+Indeed, a function that runs in the context of the \p main()
+thread ideally should \b not acquire / release the FLTK lock
+explicitly. (Though note that the lock calls are recursive,
+so calling Fl::lock() from a thread that already holds
+the lock, including the \p main() thread, is benign.
+The only constraint is that every call to Fl::lock()
+\b must be balanced by a corresponding call to
+Fl::unlock() to ensure the lock count is preserved.)
+</p>
+<p>The \p main() thread \b must call Fl::lock() \b once
+before any windows are shown, to enable the internal lock (it
+is "off" by default since it is not useful in single-threaded
+applications) but thereafter the \p main() thread lock is managed
+by the library internally.
+</p>
+<p>A worker thread, when it wants to alter the value of a widget,
+can acquire the lock using Fl::lock(), update the widget, then
+release the lock using Fl::unlock(). Acquiring the lock ensures
+that the worker thread can update the widget, without any risk
+that the \p main() thread will attempt to redraw the widget
+whilst it is being updated.
+</p>
+<p>Note that acquiring the lock<br/>
+is a blocking action; the worker thread will stall for
+as long as it takes to acquire the lock.
+If the \p main() thread is engaged in some complex drawing operation
+this may block the worker thread for a long time, effectively
+serializing what ought to be parallel operations.
+(This frequently comes as a surprise to coders less familiar
+with multithreaded programming issues; see the discussion of
+"lockless programming" later for strategies for managing this.)
+</p>
+<p>To incorporate the locking mechanism in the library,
+FLTK must be compiled with<br/>
+\p --enable-threads set during the \p configure
+process. IDE-based versions of FLTK are automatically compiled with
+the locking mechanism incorporated if possible.
+Since version 1.3, the<br/>
+\p configure script that builds the FLTK
+library also sets \p --enable-threads by default.
+</p>
+<p>\section advanced_multithreading_lock_example Simple multithreaded examples using Fl::lock
+</p>
+<p>In \p main(), call<br/>
+Fl::lock() once before Fl::run() or Fl::wait() to enable the lock
+and start the runtime multithreading support for your program.
+All callbacks and derived functions like \p handle() and \p draw()
+will now be properly locked.
+</p>
+<p>This might look something like this:
+</p>
+<p>\code
+</p><p>    int main(int argc, char **argv) {<br/>
+      /* Create your windows and widgets here */
+</p>
+<p>      Fl::lock(); /* "start" the FLTK lock mechanism */
+</p>
+<pre>
+      /* show your window */
+      main_win-&gt;show(argc, argv);
+
+      /* start your worker threads */
+      ... start threads ...
+
+      /* Run the FLTK main loop */
+      int result = Fl::run();
+
+      /* terminate any pending worker threads */
+      ... stop threads ...
+
+      return result;
+</pre>
+<p>    }<br/>
+\endcode
+</p>
+<p>You can start as many threads as you like. From within
+a thread (other than the \p main() thread) FLTK calls must be wrapped
+with calls to Fl::lock() and Fl::unlock():
+</p>
+<p>\code
+</p><p>    void my_thread(void) {
+</p><pre>
+      while (thread_still_running) {
+        /* do thread work <em>/
+        ...
+        /</em> compute new values for widgets */
+        ...
+
+        Fl::lock();      // acquire the lock
+        my_widget-&gt;update(values);
+        Fl::unlock();    // release the lock; allow other threads to access FLTK again
+        Fl::awake();     // use Fl::awake() to signal main thread to refresh the GUI
+      }
+</pre>
+<p>    }<br/>
+\endcode
+</p>
+<p>\note<br/>
+To trigger a refresh of the GUI from a worker thread, the
+worker code should call Fl::awake()
+</p>
+<p>&lt;H3&gt;Using Fl::awake thread messages&lt;/H3&gt;
+You can send messages from worker threads to the \p main() thread
+using Fl::awake(void* message).<br/>
+If using this thread message interface, your \p main() might
+look like this:
+</p>
+<p>\code
+</p><p>    int main(int argc, char **argv) {<br/>
+      /* Create your windows and widgets here */
+</p>
+<p>      Fl::lock(); /* "start" the FLTK lock mechanism */
+</p>
+<pre>
+      /* show your window */
+      main_win-&gt;show(argc, argv);
+
+      /* start your worker threads */
+      ... start threads ...
+
+      /* Run the FLTK loop and process thread messages <em>/
+      while (Fl::wait() &gt; 0) {
+        if ((next_message = Fl::thread_message()) != NULL) {
+          /</em> process your data, update widgets, etc. */
+          ...
+        }
+      }
+
+      /* terminate any pending worker threads */
+      ... stop threads ...
+
+      return 0;
+</pre>
+<p>    }<br/>
+\endcode
+</p>
+<p>Your worker threads can send messages to the \p main() thread
+using Fl::awake(void* message):
+</p>
+<p>\code
+</p><p>    void *msg;       // "msg" is a pointer to your message
+    Fl::awake(msg);  // send "msg" to main thread
+\endcode
+</p>
+<p>A message can be anything you like. The \p main() thread can retrieve
+the message by calling Fl::thread_message().
+</p>
+<p>&lt;H3&gt;Using Fl::awake callback messages&lt;/H3&gt;
+You can also request that the \p main() thread call a function on behalf of
+the worker thread by using Fl::awake(Fl_Awake_Handler cb, void* userdata).
+</p>
+<p>The \p main() thread will execute the callback "as soon as possible"
+when next processing the pending events. This can be used by a worker
+thread to perform operations (for example showing or hiding windows)
+that are prohibited in a worker thread.
+</p>
+<p>\code
+</p><p>    void do_something_cb(void *userdata) {
+</p><pre>
+      // Will run in the context of the main thread
+      ... do_stuff ...
+</pre>
+<p>    }
+</p>
+<p>    // running in worker thread<br/>
+    void *data;                       // "data" is a pointer to your user data
+    Fl::awake(do_something_cb, data); // call to execute cb in main thread
+\endcode
+</p>
+<p>\note<br/>
+The \p main() thread will execute the Fl_Awake_Handler
+callback \p do_something_cb<br/>
+asynchronously to the worker thread, at some short but indeterminate
+time after the worker thread registers the request.
+When it executes the Fl_Awake_Handler callback,
+the \p main() thread will use the contents of
+\p *userdata \b at \b the \b time \b of \b execution, not necessarily
+the contents that \p *userdata had at the time that the worker thread
+posted the callback request.<br/>
+The worker thread should<br/>
+therefore contrive \b not to alter the contents of \p *userdata once
+it posts the callback, since the worker thread does not know when the
+\p main() thread will consume that data.
+It is often useful that \p userdata point to a struct, one member
+of which the \p main() thread can modify to indicate that it has
+consumed the data, thereby allowing the
+worker thread to re-use or update \p userdata.
+</p>
+<p>\warning<br/>
+The mechanisms used to deliver Fl::awake(void<em> message)
+and Fl::awake(Fl_Awake_Handler cb, void</em> userdata) events to the
+\p main() thread can interact in unexpected ways on some platforms.
+Therefore, for reliable operation, it is advised that a program use
+either Fl::awake(Fl_Awake_Handler cb, void<em> userdata) or
+Fl::awake(void</em> message), but that they never be intermixed. Calling
+Fl::awake() with no parameters should be safe in either case.
+\par<br/>
+If you have to choose between using the Fl::awake(void<em> message)
+and Fl::awake(Fl_Awake_Handler cb, void</em> userdata) mechanisms and
+don't know which to choose, then try the
+Fl::awake(Fl_Awake_Handler cb, void* userdata) method first as it
+tends to be more powerful in general.
+</p>
+<p>\section advanced_multithreading_lockless FLTK multithreaded "lockless programming"
+</p>
+<p>The simple multithreaded examples shown above, using the FLTK lock,
+work well for many cases where multiple threads are required.
+However, when that model is extended to more complex programs,
+it often produces results that the developer did not anticipate.
+</p>
+<p>A typical case might go something like this.
+A developer creates a program to process a huge data set.
+The program has a \p main() thread and 7 worker threads and
+is targeted to run on an 8-core computer.
+When it runs, the program divides the data between the 7
+worker threads, and as they process their share of the
+data, each thread updates its portion of the GUI with the
+results, locking and unlocking as they do so.
+</p>
+<p>But when this program runs, it is much slower than expected
+and the developer finds that only<br/>
+one of the eight CPU cores seems to be utilised, despite
+there being 8 threads in the program. What happened?
+</p>
+<p>The threads in the program all run as expected, but they end up
+being serialized (that is, not able to run in parallel) because
+they all depend on the single FLTK lock.
+Acquiring (and releasing) that lock has an associated cost, and
+is a \b blocking action if the lock is already held by any other
+worker thread or by the \p main() thread.
+</p>
+<p>If the worker threads are acquiring the lock "too often", then the
+lock will \b always be held \b somewhere and every attempt by any
+other thread (even \p main()) to lock will cause that other
+thread (including \p main()) to block. And blocking \p main() also
+blocks event handling, display refresh...
+</p>
+<p>As a result, only one thread will be running at any given time,
+and the multithreaded program is effectively reduced to
+being a (complicated and somewhat less efficient) single thread
+program.
+</p>
+<p>A "solution" is for the worker threads to lock "less often",
+such that they do not block each other or the \p main()
+thread. But judging what constitutes locking "too often"
+for any given configuration,<br/>
+and hence will block, is a very tricky question.
+What works well on one machine, with a given graphics card
+and CPU configuration may behave very differently
+on another target machine.
+</p>
+<p>There are "interesting" variations on this theme, too:
+for example it is possible that a "faulty" multithreaded
+program such as described above will work
+adequately on a single-core machine (where all threads are
+inherently serialized anyway and so are less likely to block
+each other) but then stall or even deadlock in unexpected ways
+on a multicore machine when the threads do interfere with each other.
+(I have seen this - it really happens.)
+</p>
+<p>The "better" solution is to avoid using the FLTK lock
+so far as possible. Instead, the code should be designed so
+that the worker threads do not update the GUI
+themselves and therefore never need to acquire the FLTK lock.
+This would be FLTK multithreaded "lockless programming".
+</p>
+<p>There are a number of ways this can be achieved (or at
+least approximated) in practice but the most
+direct approach is for the worker threads to make use of the
+Fl::awake(Fl_Awake_Handler cb, void* userdata) method so that
+GUI updates can all run in the context of the \p main() thread,
+alleviating the need for the worker thread to ever lock.
+The onus is then on the worker threads to manage the \p userdata
+so that it is delivered safely to the \p main() thread, but there
+are many ways that can be done.
+</p>
+<p>\note<br/>
+Using Fl::awake is not, strictly speaking,
+entirely "lockless" since the awake handler mechanism
+incorporates resource locking internally to protect the
+queue of pending awake messages.<br/>
+These resource locks are held transiently and
+generally do not trigger the pathological blocking
+issues described here.
+</p>
+<p>However, aside from using Fl::awake, there are many other
+ways that a "lockless" design can be implemented, including
+message passing, various forms of IPC, etc.
+</p>
+<p>If you need high performing multithreaded programming,
+then take some time to study the options and understand
+the advantages and disadvantages of each; we can't even
+begin to scratch the surface of this huge topic here!
+</p>
+<p>And of course occasional, sparse, use of the FLTK lock from
+worker threads will do no harm; it is "excessive"
+locking (whatever that might be) that triggers the
+failing behaviour.
+</p>
+<p>It is always a Good Idea to update the GUI at the
+lowest rate that is acceptable when processing bulk
+data (or indeed, in all cases!)<br/>
+Updating at a few frames per second is probably
+adequate for providing feedback during a long calculation.
+At the upper limit, anything faster than the frame rate
+of your monitor and the updates<br/>
+will never even be displayed; why waste CPU computing
+pixels that you will never show?
+</p>
+<p>\section advanced_multithreading_caveats FLTK multithreaded Constraints
+</p>
+<p>FLTK supports multiple platforms, some of which allow only the
+\p main() thread to handle system events and open or close windows.
+The safe thing to do is to adhere to the following rules for
+threads on all operating systems:
+</p>
+<p>\li Don't \p show() or \p hide() anything
+</p><p>    that contains Fl_Window based widgets from a
+    worker thread.<br/>
+    This includes any windows, dialogs, file choosers,
+    subwindows or widgets using Fl_Gl_Window.
+    Note that this constraint also applies to non-window
+    widgets that have tooltips, since the tooltip will
+    contain a Fl_Window object.<br/>
+    The safe and portable approach is \b never to
+    call \p show() or \p hide() on any widget from the
+    context of a worker thread.<br/>
+    Instead you can use the Fl_Awake_Handler
+    variant of Fl::awake() to request the \p main() thread
+    to create, destroy, show or hide the widget on behalf
+    of the worker thread.
+</p>
+<p>\li Don't call Fl::run(), Fl::wait(), Fl::flush(), Fl::check() or any
+</p><p>    related methods that will handle system messages from a worker thread
+</p>
+<p>\li Don't intermix use of Fl::awake(Fl_Awake_Handler cb, void<em> userdata)
+</p><p>    and Fl::awake(void</em> message) calls in the same program as they may
+    interact unpredictably on some platforms; choose one or other style
+    of Fl::awake(&lt;thing&gt;) mechanism and use that.
+    (Intermixing calls to Fl::awake() should be safe with either however.)
+</p>
+<p>\li Don't start or cancel timers from a worker thread
+</p>
+<p>\li Don't change window decorations or titles from a worker thread
+</p>
+<p>\li The \p make_current() method will probably not work well for
+</p><p>    regular windows, but should always work for a Fl_Gl_Window
+    to allow for high speed rendering on graphics cards with multiple
+    pipelines. Managing thread-safe access to the GL pipelines
+    is left as an exercise for the reader!
+    (And may be target specific...)
+</p>
+<p>See also:<br/>
+Fl::lock(),<br/>
+Fl::unlock(),<br/>
+Fl::awake(),<br/>
+Fl::awake(Fl_Awake_Handler cb, void<em> userdata),
+Fl::awake(void</em> message),<br/>
+Fl::thread_message().
+</p>
+<p>\htmlonly<br/>
+&lt;hr&gt;<br/>
+&lt;table summary="navigation bar" width="100%" border="0"&gt;
+&lt;tr&gt;<br/>
+  &lt;td width="45%" align="LEFT"&gt;<br/>
+    &lt;a class="el" href="fluid.html"&gt;<br/>
+    [Prev]<br/>
+    Programming with FLUID<br/>
+    &lt;/a&gt;<br/>
+  &lt;/td&gt;<br/>
+  &lt;td width="10%" align="CENTER"&gt;<br/>
+    &lt;a class="el" href="index.html"&gt;[Index]&lt;/a&gt;
+  &lt;/td&gt;<br/>
+  &lt;td width="45%" align="RIGHT"&gt;<br/>
+    &lt;a class="el" href="unicode.html"&gt;<br/>
+    Unicode and UTF-8 Support<br/>
+    [Next]<br/>
+    &lt;/a&gt;<br/>
+  &lt;/td&gt;<br/>
+&lt;/tr&gt;<br/>
+&lt;/table&gt;<br/>
+\endhtmlonly
+</p>
+<p>*/</p>
+
+</body>
+</html>

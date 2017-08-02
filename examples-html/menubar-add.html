@@ -1,0 +1,104 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+<meta name="generator" content="HTML::TextToHTML v2.51"/>
+</head>
+<body>
+<p>//<br/>
+// "$Id: menubar-add.cxx 8864 2011-07-19 04:49:30Z greg.ercolano $"
+//<br/>
+//      An example of using Fl_Menu_Bar's add() to dynamically create menubars
+//
+</p><pre>
+//      Menu bars can be created several ways. Using add() allows
+//      dynamically creating a menubar using a 'pathname' syntax.
+//      Use if you're creating items dynamically, or if you're making 
+//      menubars by hand (as opposed to using fluid), as it's easier
+//      to type and read. 
+//
+//      In this case we're using one callback for all items, 
+//      but you can make unique callbacks for each item if needed.
+</pre>
+<p>//<br/>
+// Copyright 2010 Greg Ercolano.<br/>
+// Copyright 1998-2010 by Bill Spitzak and others.
+//<br/>
+// This library is free software. Distribution and use rights are outlined in
+// the file "COPYING" which should have been included with this file.  If this
+// file is missing or damaged, see the license at:
+//<br/>
+//     <a href="http://www.fltk.org/COPYING.php">http://www.fltk.org/COPYING.php</a><br/>
+//<br/>
+// Please report all bugs and problems on the following page:
+//<br/>
+//     <a href="http://www.fltk.org/str.php">http://www.fltk.org/str.php</a><br/>
+//
+</p><pre>
+#include &lt;stdio.h&gt;                      // fprintf()
+#include &lt;stdlib.h&gt;                     // exit()
+#include &lt;string.h&gt;                     // strcmp()
+</pre>
+<p>#include &lt;FL/Fl.H&gt;<br/>
+#include &lt;FL/Fl_Window.H&gt;<br/>
+#include &lt;FL/Fl_Menu_Bar.H&gt;<br/>
+#include &lt;FL/filename.H&gt;                // fl_open_uri()
+</p>
+<p>// This callback is invoked whenever the user clicks an item in the menu bar
+static void MyMenuCallback(Fl_Widget *w, void *) {
+</p><pre>
+  Fl_Menu_Bar <em>bar = (Fl_Menu_Bar</em>)w;                           // Get the menubar widget
+  const Fl_Menu_Item *item = bar-&gt;mvalue();                     // Get the menu item that was picked
+</pre>
+<p>  char ipath[256]; bar-&gt;item_pathname(ipath, sizeof(ipath));    // Get full pathname of picked item
+</p>
+<p>  fprintf(stderr, "callback: You picked '%s'", item-&gt;label());  // Print item picked
+  fprintf(stderr, ", item_pathname() is '%s'", ipath);          // ..and full pathname
+</p>
+<p>  if ( item-&gt;flags &amp; (FL_MENU_RADIO|FL_MENU_TOGGLE) ) {         // Toggle or radio item?
+    fprintf(stderr, ", value is %s", item-&gt;value()?"on":"off"); // Print item's value
+  }<br/>
+  fprintf(stderr, "\n");<br/>
+  if ( strcmp(item-&gt;label(), "Google") == 0 ) { fl_open_uri("<a href="http://google.com/">http://google.com/</a>"); }
+  if ( strcmp(item-&gt;label(), "&amp;Quit") == 0 ) { exit(0); }
+}
+</p>
+<p>int main() {<br/>
+  Fl::scheme("gtk+");<br/>
+  Fl_Window *win = new Fl_Window(400,200, "menubar-simple");    // Create window
+  Fl_Menu_Bar *menu = new Fl_Menu_Bar(0,0,400,25);              // Create menubar, items..
+  menu-&gt;add("&amp;File/&amp;Open",  "^o", MyMenuCallback);
+  menu-&gt;add("&amp;File/&amp;Save",  "^s", MyMenuCallback, 0, FL_MENU_DIVIDER);
+  menu-&gt;add("&amp;File/&amp;Quit",  "^q", MyMenuCallback);
+  menu-&gt;add("&amp;Edit/&amp;Copy",  "^c", MyMenuCallback);
+  menu-&gt;add("&amp;Edit/&amp;Paste", "^v", MyMenuCallback, 0, FL_MENU_DIVIDER);
+  menu-&gt;add("&amp;Edit/Radio 1",   0, MyMenuCallback, 0, FL_MENU_RADIO);
+  menu-&gt;add("&amp;Edit/Radio 2",   0, MyMenuCallback, 0, FL_MENU_RADIO|FL_MENU_DIVIDER);
+</p><pre>
+  menu-&gt;add("&amp;Edit/Toggle 1",  0, MyMenuCallback, 0, FL_MENU_TOGGLE);                   // Default: off 
+  menu-&gt;add("&amp;Edit/Toggle 2",  0, MyMenuCallback, 0, FL_MENU_TOGGLE);                   // Default: off
+  menu-&gt;add("&amp;Edit/Toggle 3",  0, MyMenuCallback, 0, FL_MENU_TOGGLE|FL_MENU_VALUE);     // Default: on
+</pre>
+<p>  menu-&gt;add("&amp;Help/Google",    0, MyMenuCallback);
+</p>
+<p>  // Example: show how we can dynamically change the state of item Toggle #2 (turn it 'on')
+  {
+</p><pre>
+      Fl_Menu_Item <em>item = (Fl_Menu_Item</em>)menu-&gt;find_item("&amp;Edit/Toggle 2");    // Find item
+      if ( item ) item-&gt;set();                                                  // Turn it on
+      else fprintf(stderr, "'Toggle 2' item not found?!\n");                    // (optional) Not found? complain!
+</pre>
+<p>  }
+</p>
+<p>  win-&gt;end();<br/>
+  win-&gt;show();<br/>
+  return(Fl::run());<br/>
+}
+</p>
+<p>//<br/>
+// End of "$Id: menubar-add.cxx 8864 2011-07-19 04:49:30Z greg.ercolano $".
+//</p>
+
+</body>
+</html>

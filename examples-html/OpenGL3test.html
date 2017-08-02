@@ -1,0 +1,244 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+<meta name="generator" content="HTML::TextToHTML v2.51"/>
+</head>
+<body>
+<p>//<br/>
+// "$Id: OpenGL3test.cxx 11791 2016-06-22 07:18:30Z manolo $"
+//<br/>
+// Tiny OpenGL v3 demo program for the Fast Light Tool Kit (FLTK).
+//<br/>
+// Copyright 1998-2015 by Bill Spitzak and others.
+//<br/>
+// This library is free software. Distribution and use rights are outlined in
+// the file "COPYING" which should have been included with this file.  If this
+// file is missing or damaged, see the license at:
+//<br/>
+//     <a href="http://www.fltk.org/COPYING.php">http://www.fltk.org/COPYING.php</a><br/>
+//<br/>
+// Please report all bugs and problems on the following page:
+//<br/>
+//     <a href="http://www.fltk.org/str.php">http://www.fltk.org/str.php</a><br/>
+//
+</p>
+<p>#include &lt;stdarg.h&gt;<br/>
+#include &lt;FL/Fl.H&gt;<br/>
+#include &lt;FL/x.H&gt;<br/>
+#include &lt;FL/Fl_Window.H&gt;<br/>
+#include &lt;FL/Fl_Gl_Window.H&gt;<br/>
+#include &lt;FL/Fl_Light_Button.H&gt;<br/>
+#include &lt;FL/Fl_Text_Display.H&gt;<br/>
+#include &lt;FL/Fl_Text_Buffer.H&gt;<br/>
+#if defined(__APPLE__)<br/>
+#  include &lt;OpenGL/gl3.h&gt; // defines OpenGL 3.0+ functions
+#else<br/>
+#  if defined(WIN32)<br/>
+#    define GLEW_STATIC 1<br/>
+#  endif<br/>
+#  include &lt;GL/glew.h&gt;<br/>
+#endif
+</p>
+<p>void add_output(const char *format, ...);
+</p>
+<p>class SimpleGL3Window : public Fl_Gl_Window {
+  GLuint shaderProgram;<br/>
+  GLuint vertexArrayObject;<br/>
+  GLuint vertexBuffer;<br/>
+  GLint positionUniform;<br/>
+  GLint colourAttribute;<br/>
+  GLint positionAttribute;<br/>
+  int gl_version_major;<br/>
+public:<br/>
+  SimpleGL3Window(int x, int y, int w, int h) :  Fl_Gl_Window(x, y, w, h) {
+    mode(FL_RGB8 | FL_DOUBLE | FL_OPENGL3);
+    shaderProgram = 0;<br/>
+  }<br/>
+  void draw(void) {<br/>
+    if (gl_version_major &lt; 3) return;<br/>
+    if (!shaderProgram) {
+</p><pre>
+      GLuint  vs;
+      GLuint  fs;
+      int Mslv, mslv; // major and minor version numbers of the shading language
+      sscanf((char*)glGetString(GL_SHADING_LANGUAGE_VERSION), "%d.%d", &amp;Mslv, &amp;mslv);
+      add_output("Shading Language Version=%d.%d\n",Mslv, mslv);
+      const char *vss_format="<strong>version %d%d\n\
+      uniform vec2 p;\
+      in vec4 position;\
+      in vec4 colour;\
+      out vec4 colourV;\
+      void main (void)\
+      {\
+      colourV = colour;\
+      gl_Position = vec4(p, 0.0, 0.0) + position;\
+      }";
+      char vss_string[300]; const char *vss = vss_string;
+      sprintf(vss_string, vss_format, Mslv, mslv);
+      const char *fss_format="</strong>version %d%d\n\
+      in vec4 colourV;\
+      out vec4 fragColour;\
+      void main(void)\
+      {\
+      fragColour = colourV;\
+      }";
+      char fss_string[200]; const char <em>fss = fss_string;
+      sprintf(fss_string, fss_format, Mslv, mslv);
+      GLint err; GLchar CLOG[1000]; GLsizei length;
+      vs = glCreateShader(GL_VERTEX_SHADER);
+      glShaderSource(vs, 1, &amp;vss, NULL);
+      glCompileShader(vs);
+      glGetShaderiv(vs, GL_COMPILE_STATUS, &amp;err);
+      if (err != GL_TRUE) {
+        glGetShaderInfoLog(vs, sizeof(CLOG), &amp;length, CLOG); 
+        add_output("vs ShaderInfoLog=%s\n",CLOG);
+        }
+      fs = glCreateShader(GL_FRAGMENT_SHADER);
+      glShaderSource(fs, 1, &amp;fss, NULL);
+      glCompileShader(fs);
+      glGetShaderiv(fs, GL_COMPILE_STATUS, &amp;err);
+      if (err != GL_TRUE) {
+        glGetShaderInfoLog(fs, sizeof(CLOG), &amp;length, CLOG); 
+        add_output("fs ShaderInfoLog=%s\n",CLOG);
+        }     
+      // Attach the shaders
+      shaderProgram = glCreateProgram();
+      glAttachShader(shaderProgram, vs);
+      glAttachShader(shaderProgram, fs);
+      glBindFragDataLocation(shaderProgram, 0, "fragColour");
+      glLinkProgram(shaderProgram);
+      glGetProgramiv(shaderProgram, GL_LINK_STATUS, &amp;err);
+      if (err != GL_TRUE) {
+        glGetProgramInfoLog(shaderProgram, sizeof(CLOG), &amp;length, CLOG);
+        add_output("link log=%s\n", CLOG);
+      }
+      // Get pointers to uniforms and attributes
+      positionUniform = glGetUniformLocation(shaderProgram, "p");
+      colourAttribute = glGetAttribLocation(shaderProgram, "colour");
+      positionAttribute = glGetAttribLocation(shaderProgram, "position");
+      glDeleteShader(vs);
+      glDeleteShader(fs);
+      // Upload vertices (1st four values in a row) and colours (following four values)
+      GLfloat vertexData[]= { -0.5,-0.5,0.0,1.0,   1.0,0.0,0.0,1.0,
+        -0.5, 0.5,0.0,1.0,   0.0,1.0,0.0,1.0,
+        0.5, 0.5,0.0,1.0,   0.0,0.0,1.0,1.0,
+        0.5,-0.5,0.0,1.0,   1.0,1.0,1.0,1.0};
+      glGenVertexArrays(1, &amp;vertexArrayObject);
+      glBindVertexArray(vertexArrayObject);
+      
+      glGenBuffers(1, &amp;vertexBuffer);
+      glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+      glBufferData(GL_ARRAY_BUFFER, 4</em>8<em>sizeof(GLfloat), vertexData, GL_STATIC_DRAW);
+      
+      glEnableVertexAttribArray((GLuint)positionAttribute);
+      glEnableVertexAttribArray((GLuint)colourAttribute  );
+      glVertexAttribPointer((GLuint)positionAttribute, 4, GL_FLOAT, GL_FALSE, 8</em>sizeof(GLfloat), 0);
+      glVertexAttribPointer((GLuint)colourAttribute  , 4, GL_FLOAT, GL_FALSE, 8<em>sizeof(GLfloat), (char</em>)0+4*sizeof(GLfloat));
+</pre>
+<p>    }<br/>
+    else if ((!valid())) {<br/>
+      glViewport(0, 0, pixel_w(), pixel_h());
+    }<br/>
+    glClearColor(0.08, 0.8, 0.8, 1.0);<br/>
+    glClear(GL_COLOR_BUFFER_BIT);<br/>
+    glUseProgram(shaderProgram);<br/>
+    GLfloat p[]={0,0};<br/>
+    glUniform2fv(positionUniform, 1, (const GLfloat *)&amp;p);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+  }<br/>
+  virtual int handle(int event) {<br/>
+    static int first = 1;<br/>
+    if (first &amp;&amp; event == FL_SHOW &amp;&amp; shown()) {
+</p><pre>
+      first = 0;
+      make_current();
+#ifndef __APPLE__
+      GLenum err = glewInit(); // defines pters to functions of OpenGL V 1.2 and above
+      if (err) Fl::warning("glewInit() failed returning %u", err);
+      else add_output("Using GLEW %s\n", glewGetString(GLEW_VERSION));
+#endif
+      const uchar *glv = glGetString(GL_VERSION);
+      add_output("GL_VERSION=%s\n", glv);
+      sscanf((const char <em>)glv, "%d", &amp;gl_version_major);
+      if (gl_version_major &lt; 3) add_output("\nThis platform does not support OpenGL V3\n\n");
+</pre>
+<p>    }
+    
+</p><p>    if (event == FL_PUSH &amp;&amp; gl_version_major &gt;= 3) {
+</p><pre>
+      static float factor = 1.1;
+      GLfloat data[4];
+      glGetBufferSubData(GL_ARRAY_BUFFER, 0, 4</em>sizeof(GLfloat), data);
+      if (data[0] &lt; -0.88 || data[0] &gt; -0.5) factor = 1/factor;
+      data[0] <em>= factor;
+      glBufferSubData(GL_ARRAY_BUFFER, 0, 4</em>sizeof(GLfloat), data);
+      glGetBufferSubData(GL_ARRAY_BUFFER, 24<em>sizeof(GLfloat), 4</em>sizeof(GLfloat), data);
+      data[0] <em>= factor;
+      glBufferSubData(GL_ARRAY_BUFFER, 24</em>sizeof(GLfloat), 4*sizeof(GLfloat), data);
+      redraw();
+      add_output("push  Fl_Gl_Window::pixels_per_unit()=%.1f\n", pixels_per_unit());
+      return 1;
+</pre>
+<p>    }<br/>
+    return Fl_Gl_Window::handle(event);
+  }<br/>
+  void reset(void) { shaderProgram = 0; }
+};
+</p>
+<p>void toggle_double(Fl_Widget *wid, void *data) {
+  static bool doublebuff = true;<br/>
+  doublebuff = !doublebuff;<br/>
+  SimpleGL3Window <em>glwin = (SimpleGL3Window</em>)data;
+  int flags = glwin-&gt;mode();<br/>
+  if (doublebuff) flags |= FL_DOUBLE; else flags &amp;= ~FL_DOUBLE;
+  glwin-&gt;mode(flags);<br/>
+  glwin-&gt;reset();<br/>
+}
+</p>
+<p>Fl_Text_Display *output; // shared between output_win() and add_output()
+</p>
+<p>void output_win(SimpleGL3Window *gl)<br/>
+{<br/>
+  output = new Fl_Text_Display(300,0,500, 280);
+  Fl_Light_Button *lb = new Fl_Light_Button(300, 280, 500, 20, "Double-Buffered");
+  lb-&gt;callback(toggle_double);<br/>
+  lb-&gt;user_data(gl);<br/>
+  lb-&gt;value(1);<br/>
+  output-&gt;buffer(new Fl_Text_Buffer());
+}
+</p>
+<p>void add_output(const char *format, ...)
+{<br/>
+  va_list args;<br/>
+  char line_buffer[10000];<br/>
+  va_start(args, format);<br/>
+  vsnprintf(line_buffer, sizeof(line_buffer)-1, format, args);
+  va_end(args);<br/>
+  output-&gt;buffer()-&gt;append(line_buffer);
+  output-&gt;scroll(10000, 0);<br/>
+  output-&gt;redraw();<br/>
+}
+</p>
+<p>int main(int argc, char **argv)<br/>
+{<br/>
+  Fl::use_high_res_GL(1);<br/>
+  Fl_Window *topwin = new Fl_Window(800, 300);
+  SimpleGL3Window *win = new SimpleGL3Window(0, 0, 300, 300);
+  win-&gt;end();<br/>
+  output_win(win);<br/>
+  topwin-&gt;end();<br/>
+  topwin-&gt;resizable(win);<br/>
+  topwin-&gt;label("Click GL panel to reshape");
+  topwin-&gt;show(argc, argv);<br/>
+  Fl::run();<br/>
+}
+</p>
+<p>//<br/>
+// End of "$Id: OpenGL3test.cxx 11791 2016-06-22 07:18:30Z manolo $".
+//
+</p>
+
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+<meta name="generator" content="HTML::TextToHTML v2.51"/>
+</head>
+<body>
+<h1><a name="section_1">FLTK EXAMPLE PROGRAMS</a></h1>
+
+<p>    This directory contains example FLTK programs that demonstrate
+    recommended programming practices and techniques for FLTK application
+    programmers. The "*-simple.cxx" files are a good starting point for
+    those new to FLTK.
+</p>
+<p>    The programs in this directory are NOT built automatically 
+    when you build FLTK; you have to manually build them.
+</p>
+<p>    The goals of these example programs:
+</p>
+<ul>
+  <li>Show good programming style for app programmers to emulate
+  </li><li>Show simple examples of how to use widgets to new users of FLTK.
+  </li><li>Show intermediate or advanced examples of techniques often 
+        misused or hard to document
+  </li><li>Demonstrate code that are FAQs on the newsgroup forum.
+        (such as how to use threads, callbacks, etc)
+  </li><li>Example code should be short, but not at the expense of clarity.
+  </li><li>Where possible, examples should emphasize FLTK's simplicity.
+</li></ul>
+<p><strong>NEW SUBMISSIONS: RECOMMENDED PRACTICES</strong>
+</p>
+<p>    These programs must follow FLTK coding style as defined in the FLTK
+    "CMP" (Configuration Management Plan/Coding Standards).
+</p>
+<p>    Example code should have the above goals in mind.  The best examples
+    are those that are as short and clear as possible; terse, but not
+    at the expense of clarity.
+</p>
+<p>    To avoid cluttering up the top level directory with ancillary files
+    (such as image files or icons), examples that depend on more than
+    just a .cxx/.h file pair should have their own subdirectory.
+</p>
+<p>    Data files common to several examples should be located in the
+    examples/data directory. 
+    
+</p><p>    Ancillary data files should be as small as possible, to keep the 
+    distribution tar files small. Avoid high resolution images or
+    uncompressed images when possible. 
+    
+</p><p>    Examples that need large data sets (HD images, etc) should not
+    be part of the FLTK distribution; they can be provided as separate
+    packages (eg. as articles or external links).
+</p>
+<p>    Some widgets have multiple capabilities that are best demonstrated
+    separately. For instance, the table widget can be used as a
+    custom data table, or as a spreadsheet, or as a widget container.
+    So separate examples for each would be e.g. "table-custom-data.cxx",
+    "table-spreadsheet.cxx", "table-widget-container.cxx", etc.
+</p>
+<p>    Example programs should contain comments that help understand the
+    concepts shown, but not so verbose as to dwarf the code or make
+    the code hard to read. Within code, it's best to use single line
+    comments to emphasize code that might be unclear. Let the code
+    speak as much as possible.
+</p>
+<p>    Examples programs may be referred to from the documentation
+    as good examples on how to do particular programming techniques.
+</p>
+<p><strong>NAMING CONVENTIONS</strong>
+</p>
+<p>    Example programs that demonstrate a particular widget should start
+    with that widget's name in lowercase, eg. "table.cxx" for Fl_Table.
+</p>
+<p>    Demonstrations of a particular technique should start with
+    "howto-xxx.cxx" to avoid naming conflicts with future widgets 
+    of the same name.
+</p>
+<pre>
+      xxx-simple.cxx          -- Simplest possible example of widget xxx
+                                 eg. table-simple.cxx
+
+      xxx-&lt;technique&gt;.cxx     -- A particular "technique" using widget xxx
+                                 eg. "table-spreadsheet.cxx"
+
+      howto-&lt;technique&gt;.cxx   -- Demonstrate a particular technique, eg. "howto-threading.cxx"
+</pre>
+<p>    Some example programs may depend on multiple files. To avoid
+    cluttering up the top level examples directory, such examples will
+    have their own subdirectory with the files they depend on localized
+    to that directory.
+</p>
+<p>    Example programs should be as small as possible, to keep the
+    distribution tar files small.
+</p>
+<p>    Very large examples, or examples that depend on large data sets
+    should be submitted as separate articles on the FLTK site, or as
+    external links on the FLTK site's 'links' page.
+</p>
+<p><strong>HISTORY</strong>
+</p>
+<p>    Previous to FLTK 1.3.0, the fltk/test directory served the dual
+    purpose of containing test suites as well as example code.
+</p>
+<p>    But the fltk/test programs started becoming necessarily complex,
+    testing for obscure problems, and not necessarily good demos for
+    applications programmers.
+</p>
+<p>    The fltk/examples directory was created in FLTK 1.3.0 to separate
+    'good programming examples' from the test suite code. 
+</p>
+<p><strong>DISCLAIMER</strong>
+</p>
+<p>    The examples in this directory are provided 'as-is', without any express
+    or implied warranty.  In no event will the authors be held liable for
+    any damages arising from the use of this software.
+  
+</p>
+<p><strong>BUGS</strong>
+</p>
+<p>    If you find a bug, please report it through the fltk STR form at
+    <a href="http://fltk.org/str.php">http://fltk.org/str.php</a></p>
+
+</body>
+</html>

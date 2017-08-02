@@ -1,0 +1,100 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+<meta name="generator" content="HTML::TextToHTML v2.51"/>
+</head>
+<body>
+<p>//<br/>
+// "$Id: wizard-simple.cxx 8864 2011-07-19 04:49:30Z greg.ercolano $"
+//
+</p><pre>
+//      Simple Fl_Wizard widget example. 
+//      Originally from erco's cheat sheet 06/05/2010, permission by author.
+</pre>
+<p>//<br/>
+// Copyright 2010 Greg Ercolano.<br/>
+// Copyright 1998-2010 by Bill Spitzak and others.
+//<br/>
+// This library is free software. Distribution and use rights are outlined in
+// the file "COPYING" which should have been included with this file.  If this
+// file is missing or damaged, see the license at:
+//<br/>
+//     <a href="http://www.fltk.org/COPYING.php">http://www.fltk.org/COPYING.php</a><br/>
+//<br/>
+// Please report all bugs and problems on the following page:
+//<br/>
+//     <a href="http://www.fltk.org/str.php">http://www.fltk.org/str.php</a><br/>
+//<br/>
+#include &lt;stdlib.h&gt;<br/>
+#include &lt;FL/Fl.H&gt;<br/>
+#include &lt;FL/Fl_Window.H&gt;<br/>
+#include &lt;FL/Fl_Group.H&gt;<br/>
+#include &lt;FL/Fl_Wizard.H&gt;<br/>
+#include &lt;FL/Fl_Button.H&gt;<br/>
+#include &lt;FL/Fl_Multiline_Output.H&gt;<br/>
+//<br/>
+// Simple 'wizard' using fltk's new Fl_Wizard widget
+//<br/>
+Fl_Window *G_win = 0;<br/>
+Fl_Wizard *G_wiz = 0;
+</p>
+<p>void back_cb(Fl_Widget<em>,void</em>) { G_wiz-&gt;prev(); }
+void next_cb(Fl_Widget<em>,void</em>) { G_wiz-&gt;next(); }
+void done_cb(Fl_Widget<em>,void</em>) { exit(0); }
+</p>
+<p>int main(int argc, char **argv) {
+</p><p>    G_win = new Fl_Window(400,300,"Example Wizard");
+    G_wiz = new Fl_Wizard(0,0,400,300);
+</p>
+<p>    // Wizard: page 1<br/>
+    {
+</p><pre>
+        Fl_Group *g = new Fl_Group(0,0,400,300);
+        Fl_Button *next = new Fl_Button(290,265,100,25,"Next @-&gt;"); next-&gt;callback(next_cb);
+        Fl_Multiline_Output *out = new Fl_Multiline_Output(10,30,400-20,300-80,"Welcome");
+        out-&gt;labelsize(20);
+        out-&gt;align(FL_ALIGN_TOP|FL_ALIGN_LEFT);
+        out-&gt;value("This is First page");
+        g-&gt;end();
+</pre>
+<p>    }<br/>
+    // Wizard: page 2<br/>
+    {
+</p><pre>
+        Fl_Group *g = new Fl_Group(0,0,400,300);
+        Fl_Button *next = new Fl_Button(290,265,100,25,"Next @-&gt;"); next-&gt;callback(next_cb);
+        Fl_Button *back = new Fl_Button(180,265,100,25,"@&lt;- Back"); back-&gt;callback(back_cb);
+        Fl_Multiline_Output *out = new Fl_Multiline_Output(10,30,400-20,300-80,"Terms And Conditions");
+        out-&gt;labelsize(20);
+        out-&gt;align(FL_ALIGN_TOP|FL_ALIGN_LEFT);
+        out-&gt;value("This is the Second page");
+        g-&gt;end();
+</pre>
+<p>    }<br/>
+    // Wizard: page 3<br/>
+    {
+</p><pre>
+        Fl_Group *g = new Fl_Group(0,0,400,300);
+        Fl_Button *done = new Fl_Button(290,265,100,25,"Finish"); done-&gt;callback(done_cb);
+        Fl_Button *back = new Fl_Button(180,265,100,25,"@&lt;- Back"); back-&gt;callback(back_cb);
+        Fl_Multiline_Output *out = new Fl_Multiline_Output(10,30,400-20,300-80,"Finish");
+        out-&gt;labelsize(20);
+        out-&gt;align(FL_ALIGN_TOP|FL_ALIGN_LEFT);
+        out-&gt;value("This is the Last page");
+        g-&gt;end();
+</pre>
+<p>    }<br/>
+    G_wiz-&gt;end();<br/>
+    G_win-&gt;end();<br/>
+    G_win-&gt;show(argc, argv);<br/>
+    return Fl::run();<br/>
+}
+</p>
+<p>//<br/>
+// End of "$Id: wizard-simple.cxx 8864 2011-07-19 04:49:30Z greg.ercolano $".
+//</p>
+
+</body>
+</html>

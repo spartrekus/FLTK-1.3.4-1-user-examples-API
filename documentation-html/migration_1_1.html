@@ -1,0 +1,215 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+<meta name="generator" content="HTML::TextToHTML v2.51"/>
+</head>
+<body>
+<p>/**
+</p>
+<p> \page  migration_1_1   Migrating Code from FLTK 1.0 to 1.1
+</p>
+<p>This appendix describes the differences between the FLTK
+1.0.x and FLTK 1.1.x functions and classes.
+</p>
+<p>\section migration_1_1_color Color Values
+</p>
+<p>Color values are now stored in a 32-bit unsigned integer
+instead of the unsigned character in 1.0.x. This allows for the
+specification of 24-bit RGB values or 8-bit FLTK color indices.
+</p>
+<p>\c FL_BLACK and \c FL_WHITE now remain black and white, even if
+the base color of the gray ramp is changed using Fl::background().
+\c FL_DARK3 and \c FL_LIGHT3 can be used instead to 
+draw a very dark or a very bright background hue.
+</p>
+<p>Widgets use the new color symbols \c FL_FOREGROUND_COLOR,
+\c FL_BACKGROUND_COLOR, \c FL_BACKGROUND2_COLOR, 
+\c FL_INACTIVE_COLOR, and \c FL_SELECTION_COLOR.
+More details can be found in the chapter \ref enumerations.
+</p>
+<p>\section migration_1_1_cutnpaste Cut and Paste Support
+</p>
+<p>The FLTK clipboard is now broken into two parts - a local
+selection value and a cut-and-paste value. This allows FLTK to
+support things like highlighting and replacing text that was
+previously cut or copied, which makes FLTK applications behave
+like traditional GUI applications.
+</p>
+<p>\section migration_1_1_file_chooser File Chooser
+</p>
+<p>The file chooser in FLTK 1.1.x is significantly different
+than the one supplied with FLTK 1.0.x. Any code that directly
+references the old \c FCB class or members will need
+to be ported to the new Fl_File_Chooser class.
+</p>
+<p>\section migration_1_1_functions Function Names
+</p>
+<p>Some function names have changed from FLTK 1.0.x to 1.1.x in
+order to avoid name space collisions. You can still use the old
+function names by defining the \c FLTK_1_0_COMPAT symbol on
+the command-line when you compile (\c -DFLTK_1_0_COMPAT) or in
+your source, e.g.:
+</p>
+<p>\code<br/>
+#define FLTK_1_0_COMPAT<br/>
+#include &lt;FL/Fl.H&gt;<br/>
+#include &lt;FL/Enumerations.H&gt;<br/>
+#include &lt;FL/filename.H&gt;<br/>
+\endcode
+</p>
+<p>The following table shows the old and new function names:
+</p>
+<p>&lt;CENTER&gt;<br/>
+&lt;TABLE WIDTH="80%" BORDER="1"&gt;<br/>
+&lt;TR&gt;
+</p><pre>
+        &lt;TH&gt;Old 1.0.x Name&lt;/TH&gt;
+        &lt;TH&gt;New 1.1.x Name&lt;/TH&gt;
+</pre>
+<p>&lt;/TR&gt;<br/>
+&lt;TR&gt;
+</p><pre>
+        &lt;TD&gt;contrast()&lt;/TD&gt;
+        &lt;TD&gt;fl_contrast()&lt;/TD&gt;
+</pre>
+<p>&lt;/TR&gt;<br/>
+&lt;TR&gt;
+</p><pre>
+        &lt;TD&gt;down()&lt;/TD&gt;
+        &lt;TD&gt;fl_down()&lt;/TD&gt;
+</pre>
+<p>&lt;/TR&gt;<br/>
+&lt;TR&gt;
+</p><pre>
+        &lt;TD&gt;filename_absolute()&lt;/TD&gt;
+        &lt;TD&gt;fl_filename_absolute()&lt;/TD&gt;
+</pre>
+<p>&lt;/TR&gt;<br/>
+&lt;TR&gt;
+</p><pre>
+        &lt;TD&gt;filename_expand()&lt;/TD&gt;
+        &lt;TD&gt;fl_filename_expand()&lt;/TD&gt;
+</pre>
+<p>&lt;/TR&gt;<br/>
+&lt;TR&gt;
+</p><pre>
+        &lt;TD&gt;filename_ext()&lt;/TD&gt;
+        &lt;TD&gt;fl_filename_ext()&lt;/TD&gt;
+</pre>
+<p>&lt;/TR&gt;<br/>
+&lt;TR&gt;
+</p><pre>
+        &lt;TD&gt;filename_isdir()&lt;/TD&gt;
+        &lt;TD&gt;fl_filename_isdir()&lt;/TD&gt;
+</pre>
+<p>&lt;/TR&gt;<br/>
+&lt;TR&gt;
+</p><pre>
+        &lt;TD&gt;filename_list()&lt;/TD&gt;
+        &lt;TD&gt;fl_filename_list()&lt;/TD&gt;
+</pre>
+<p>&lt;/TR&gt;<br/>
+&lt;TR&gt;
+</p><pre>
+        &lt;TD&gt;filename_match()&lt;/TD&gt;
+        &lt;TD&gt;fl_filename_match()&lt;/TD&gt;
+</pre>
+<p>&lt;/TR&gt;<br/>
+&lt;TR&gt;
+</p><pre>
+        &lt;TD&gt;filename_name()&lt;/TD&gt;
+        &lt;TD&gt;fl_filename_name()&lt;/TD&gt;
+</pre>
+<p>&lt;/TR&gt;<br/>
+&lt;TR&gt;
+</p><pre>
+        &lt;TD&gt;filename_relative()&lt;/TD&gt;
+        &lt;TD&gt;fl_filename_relative()&lt;/TD&gt;
+</pre>
+<p>&lt;/TR&gt;<br/>
+&lt;TR&gt;
+</p><pre>
+        &lt;TD&gt;filename_setext()&lt;/TD&gt;
+        &lt;TD&gt;fl_filename_setext()&lt;/TD&gt;
+</pre>
+<p>&lt;/TR&gt;<br/>
+&lt;TR&gt;
+</p><pre>
+        &lt;TD&gt;frame()&lt;/TD&gt;
+        &lt;TD&gt;fl_frame()&lt;/TD&gt;
+</pre>
+<p>&lt;/TR&gt;<br/>
+&lt;TR&gt;
+</p><pre>
+        &lt;TD&gt;inactive()&lt;/TD&gt;
+        &lt;TD&gt;fl_inactive()&lt;/TD&gt;
+</pre>
+<p>&lt;/TR&gt;<br/>
+&lt;TR&gt;
+</p><pre>
+        &lt;TD&gt;numericsort()&lt;/TD&gt;
+        &lt;TD&gt;fl_numericsort()&lt;/TD&gt;
+</pre>
+<p>&lt;/TR&gt;<br/>
+&lt;/TABLE&gt;<br/>
+&lt;/CENTER&gt;
+</p>
+<p>\section migration_1_1_images Image Support
+</p>
+<p>Image support in FLTK has been significantly revamped in 1.1.x.
+The Fl_Image class is now a proper base class, with the core 
+image drawing functionality in the Fl_Bitmap, Fl_Pixmap, and
+Fl_RGB_Image classes.
+</p>
+<p>BMP, GIF, JPEG, PNG, XBM, and XPM image files can now be
+loaded using the appropriate image classes, and the
+Fl_Shared_Image class can be used to cache images in memory.
+</p>
+<p>Image labels are no longer provided as an add-on label type.
+If you use the old \c label() methods on an image, the
+widget's \c image() method is called to set the image
+as the label.
+</p>
+<p>Image labels in menu items must still use the old labeltype
+mechanism to preserve source compatibility.
+</p>
+<p>\section migration_1_1_keyboard Keyboard Navigation
+</p>
+<p>FLTK 1.1.x now supports keyboard navigation and control with
+all widgets. To restore the old FLTK 1.0.x behavior so that only
+text widgets get keyboard focus, call the Fl::visible_focus()
+method to disable it:
+</p>
+<p>\code<br/>
+Fl::visible_focus(0);<br/>
+\endcode
+</p>
+<p>\htmlonly<br/>
+&lt;hr&gt;<br/>
+&lt;table summary="navigation bar" width="100%" border="0"&gt;
+&lt;tr&gt;<br/>
+  &lt;td width="45%" align="LEFT"&gt;<br/>
+    &lt;a class="el" href="osissues.html"&gt;
+    [Prev]<br/>
+    Operating System Issues<br/>
+    &lt;/a&gt;<br/>
+  &lt;/td&gt;<br/>
+  &lt;td width="10%" align="CENTER"&gt;<br/>
+    &lt;a class="el" href="index.html"&gt;[Index]&lt;/a&gt;
+  &lt;/td&gt;<br/>
+  &lt;td width="45%" align="RIGHT"&gt;<br/>
+    &lt;a class="el" href="migration_1_3.html"&gt;
+    Migrating Code from FLTK 1.1 to 1.3
+    [Next]<br/>
+    &lt;/a&gt;<br/>
+  &lt;/td&gt;<br/>
+&lt;/tr&gt;<br/>
+&lt;/table&gt;<br/>
+\endhtmlonly
+</p>
+<p>*/</p>
+
+</body>
+</html>
